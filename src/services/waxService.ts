@@ -5,6 +5,7 @@ import { toast } from "sonner";
 class WaxWalletService {
   private wax: any = null;
   private anchorWallet: any = null;
+  private developerWaxWallet: string = "wax_developer_wallet_address";
   
   constructor() {
     this.initializeScripts();
@@ -101,6 +102,60 @@ class WaxWalletService {
       toast.error("Transaction failed");
       return false;
     }
+  }
+
+  // New methods for the expanded game functionality
+  
+  async payParkingFee(account: string, fee: number): Promise<boolean> {
+    try {
+      console.log(`Paying ${fee} WAXP parking fee from ${account}`);
+      toast.info(`Processing ${fee} WAXP parking fee...`);
+      
+      // Simulate transaction delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast.success(`Paid ${fee} WAXP parking fee`);
+      return true;
+    } catch (error) {
+      console.error("Failed to pay parking fee:", error);
+      toast.error("Parking fee transaction failed");
+      return false;
+    }
+  }
+  
+  async collectTreasure(account: string, value: number): Promise<boolean> {
+    try {
+      console.log(`Collecting ${value} WAXP treasure for ${account}`);
+      
+      // Simulate transaction delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      return true;
+    } catch (error) {
+      console.error("Failed to collect treasure:", error);
+      return false;
+    }
+  }
+  
+  async requestWithdrawal(account: string, amount: number): Promise<boolean> {
+    try {
+      console.log(`Withdrawal request of ${amount} WAXP for ${account}`);
+      toast.info("Processing withdrawal request...");
+      
+      // Simulate transaction delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      toast.success("Withdrawal request submitted. 72-hour waiting period begins.");
+      return true;
+    } catch (error) {
+      console.error("Withdrawal request failed:", error);
+      toast.error("Withdrawal request failed");
+      return false;
+    }
+  }
+  
+  getDeveloperWalletAddress(): string {
+    return this.developerWaxWallet;
   }
 }
 

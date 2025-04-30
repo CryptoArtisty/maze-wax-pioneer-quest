@@ -1,4 +1,6 @@
 
+@import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,33 +9,37 @@
   :root {
     --background: 240 20% 3%;
     --foreground: 240 10% 90%;
-
     --card: 240 17% 8%;
     --card-foreground: 240 10% 90%;
-
     --popover: 240 17% 8%;
     --popover-foreground: 240 10% 90%;
-
     --primary: 180 100% 45%;
     --primary-foreground: 240 10% 3%;
-
     --secondary: 240 20% 16%;
     --secondary-foreground: 240 10% 90%;
-
     --muted: 240 15% 20%;
     --muted-foreground: 240 10% 70%;
-
     --accent: 180 100% 45%;
     --accent-foreground: 240 10% 3%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 240 10% 90%;
-
     --border: 240 15% 20%;
     --input: 240 15% 20%;
     --ring: 180 100% 45%;
-
     --radius: 0.5rem;
+    
+    /* Game specific variables */
+    --gold: #FFD700;
+    --sand: #c2b280;
+    --hieroglyphic-brown: #4a3728;
+    --bg-dark: #1a1a1a;
+    --bg-gradient1: #2c1f0f;
+    --canvas-gradient-top: #ff8c00;
+    --canvas-gradient-bottom: #ff4500;
+    --grid-line: rgba(255,215,0,0.3);
+    --grid-overlay: rgba(255,215,0,0.5);
+    --maze-wall: #00ffff;
+    --hint-color: rgba(0,255,255,0.3);
   }
 }
 
@@ -43,13 +49,13 @@
   }
 
   body {
-    @apply bg-maze-bg text-foreground;
-    background-image: radial-gradient(
-      circle at 50% 50%,
-      rgba(0, 230, 204, 0.05) 0%,
-      rgba(18, 18, 37, 0) 70%
-    );
-    background-size: 100% 100%;
+    @apply bg-bg-dark text-foreground;
+    background: linear-gradient(45deg, var(--bg-dark), var(--bg-gradient1));
+    font-family: 'MedievalSharp', cursive;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    position: relative;
   }
 
   .grid-cell {
@@ -71,5 +77,13 @@
     to {
       box-shadow: 0 0 20px #00e6cc, 0 0 30px #00e6cc;
     }
+  }
+  
+  .card {
+    @apply flex-1 min-w-[120px];
+  }
+  
+  .tooltip {
+    @apply absolute bg-[rgba(74,55,40,0.95)] border-2 border-gold p-4 rounded-lg text-gold max-w-[300px] opacity-0 transition-opacity duration-300 text-sm z-10 pointer-events-none;
   }
 }

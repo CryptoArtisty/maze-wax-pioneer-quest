@@ -22,4 +22,8 @@ export interface GameState {
   currentPosition: { x: number, y: number } | null;
   hasClaimedCell: boolean;
   balance: WaxBalance | null;
+  profitLoss: {
+    profit: number;
+    loss: number;
+  } | null;
 }
