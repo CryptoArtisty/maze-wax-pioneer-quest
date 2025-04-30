@@ -7,9 +7,10 @@ interface GameHUDProps {
   score: number;
   phaseTime: number;
   gamePhase: GamePhase;
+  roundNumber?: number;
 }
 
-const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase }) => {
+const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNumber = 1 }) => {
   const { gameState } = useWaxWallet();
   const highScore = parseInt(localStorage.getItem('pyrameme-high-score') || '0');
   
@@ -21,6 +22,10 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase }) => {
       
       <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[120px] text-lg">
         <span id="highScore">𓀙 High Score: {highScore}</span>
+      </div>
+      
+      <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[120px] text-lg">
+        <span id="roundNumber">Round: {roundNumber}</span>
       </div>
       
       {gameState.balance && (

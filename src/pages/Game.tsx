@@ -18,7 +18,8 @@ const Game: React.FC = () => {
   const [gamePhase, setGamePhase] = useState<GamePhase>('claim');
   const [phaseTime, setPhaseTime] = useState(60); // 60 seconds for claim phase
   const [score, setScore] = useState(0);
-  const { gameState } = useWaxWallet();
+  const [roundNumber, setRoundNumber] = useState(1);
+  const { gameState, resetCellClaim } = useWaxWallet();
   const navigate = useNavigate();
   
   // Redirect to login if not authenticated
@@ -57,6 +58,12 @@ const Game: React.FC = () => {
           setIsVictoryModalOpen(true);
         }
         
+        // Reset cell claim status for next round
+        resetCellClaim();
+        
+        // Increment round number
+        setRoundNumber(prev => prev + 1);
+        
         // Reset score for new round
         setScore(0);
       }
@@ -68,7 +75,7 @@ const Game: React.FC = () => {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [phaseTime, gamePhase, gameState.hasClaimedCell, gameState.currentPosition, score]);
+  }, [phaseTime, gamePhase, gameState.hasClaimedCell, gameState.currentPosition, score, resetCellClaim]);
 
   return (
     <div className="min-h-screen bg-bg-dark text-gold font-medieval">
@@ -81,7 +88,8 @@ const Game: React.FC = () => {
       <GameHUD 
         score={score} 
         phaseTime={phaseTime}
-        gamePhase={gamePhase} 
+        gamePhase={gamePhase}
+        roundNumber={roundNumber}
       />
       
       <main className="container mx-auto px-4 py-6">

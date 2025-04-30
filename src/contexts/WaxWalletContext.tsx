@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { WalletType, WaxUser, GameState, WaxBalance } from '@/types/waxTypes';
 import { waxService } from '@/services/waxService';
@@ -11,6 +10,7 @@ interface WaxWalletContextType {
   claimCell: (x: number, y: number) => Promise<boolean>;
   payParkingFee: (fee: number) => Promise<boolean>;
   collectTreasure: (value: number) => Promise<boolean>;
+  resetCellClaim: () => void;
 }
 
 const WaxWalletContext = createContext<WaxWalletContextType | undefined>(undefined);
@@ -226,6 +226,17 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
     }
   };
 
+  // New function to reset cell claim status
+  const resetCellClaim = () => {
+    setGameState(prev => ({
+      ...prev,
+      currentPosition: null,
+      hasClaimedCell: false
+    }));
+    
+    toast.info("All cells have been relinquished for the next round!");
+  };
+
   return (
     <WaxWalletContext.Provider value={{ 
       gameState, 
@@ -233,7 +244,8 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
       logout, 
       claimCell,
       payParkingFee,
-      collectTreasure
+      collectTreasure,
+      resetCellClaim
     }}>
       {children}
     </WaxWalletContext.Provider>
