@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import GameHeader from '@/components/GameHeader';
 import MazeGrid from '@/components/MazeGrid';
 import GameHUD from '@/components/GameHUD';
@@ -9,40 +10,55 @@ import { useWaxWallet } from '@/contexts/WaxWalletContext';
 import { ToastContainer } from '@/components/ui/custom-toast';
 import VictoryModal from '@/components/VictoryModal';
 import { GamePhase } from '@/types/gameTypes';
+import { toast } from 'sonner';
 
 const Game: React.FC = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isVictoryModalOpen, setIsVictoryModalOpen] = useState(false);
   const [gamePhase, setGamePhase] = useState<GamePhase>('claim');
-  const [phaseTime, setPhaseTime] = useState(60);
+  const [phaseTime, setPhaseTime] = useState(60); // 60 seconds for claim phase
   const [score, setScore] = useState(0);
   const { gameState } = useWaxWallet();
+  const navigate = useNavigate();
+  
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!gameState.isAuthenticated) {
+      navigate('/');
+    }
+  }, [gameState.isAuthenticated, navigate]);
 
   const toggleDrawer = () => setIsDrawerOpen(!isDrawerOpen);
 
-  // Reset timer when game phase changes
-  useEffect(() => {
-    if (gamePhase === 'claim') {
-      setPhaseTime(60); // 60 seconds for claim phase
-    } else if (gamePhase === 'play') {
-      setPhaseTime(300); // 300 seconds for play phase
-    }
-  }, [gamePhase]);
-
-  // Phase timer
+  // Game phase timer - continuously cycles through phases
   useEffect(() => {
     if (phaseTime <= 0) {
       if (gamePhase === 'claim') {
-        // Only transition to play phase if user has claimed a cell
-        if (gameState.hasClaimedCell) {
-          setGamePhase('play');
-        } else {
-          // Reset claim phase if no cell was claimed
-          setPhaseTime(60);
+        // Transition to play phase
+        setGamePhase('play');
+        setPhaseTime(300); // 300 seconds for play phase
+        
+        if (!gameState.hasClaimedCell) {
+          toast.warning("You haven't claimed a cell! Claim a cell to participate in the next round.");
         }
       } else if (gamePhase === 'play') {
-        // End game when play phase ends
-        setIsVictoryModalOpen(true);
+        // Cycle back to claim phase for a new round
+        setGamePhase('claim');
+        setPhaseTime(60); // Reset to 60 seconds for claim phase
+        
+        // Save high score
+        const currentHighScore = parseInt(localStorage.getItem('pyrameme-high-score') || '0');
+        if (score > currentHighScore) {
+          localStorage.setItem('pyrameme-high-score', score.toString());
+        }
+        
+        // Show victory modal if player had a position
+        if (gameState.currentPosition) {
+          setIsVictoryModalOpen(true);
+        }
+        
+        // Reset score for new round
+        setScore(0);
       }
       return;
     }
@@ -52,7 +68,7 @@ const Game: React.FC = () => {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [phaseTime, gamePhase, gameState.hasClaimedCell]);
+  }, [phaseTime, gamePhase, gameState.hasClaimedCell, gameState.currentPosition, score]);
 
   return (
     <div className="min-h-screen bg-bg-dark text-gold font-medieval">

@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { WalletType } from '@/types/waxTypes';
@@ -12,11 +13,13 @@ interface LoginModalProps {
 
 const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const { login } = useWaxWallet();
+  const navigate = useNavigate();
 
   const handleLoginWithWallet = async (walletType: WalletType) => {
     const success = await login(walletType);
     if (success) {
       onClose();
+      navigate('/game');
     }
   };
 

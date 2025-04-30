@@ -20,7 +20,7 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
   const [treasures, setTreasures] = useState<Treasure[]>([]);
   const [exitCell, setExitCell] = useState<ExitCell | null>(null);
   const [score, setScore] = useState(0);
-  const [hintPaths, setHintPaths] = useState<number[][]>([]);
+  const [hintPaths, setHintPaths] = useState<Array<Array<[number, number]>>>([]);
   
   const CELL_SIZE = 40; // Size of each cell in pixels
 

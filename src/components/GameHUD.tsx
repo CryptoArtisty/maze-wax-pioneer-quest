@@ -35,12 +35,22 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase }) => {
         }`}
       >
         <span id="phaseTimerStrip">
-          Phase: {gamePhase === 'claim' ? 'Claim' : 'Play'} ({phaseTime} sec)
+          Phase: {gamePhase === 'claim' ? 'Claim' : 'Play'} ({phaseTime}s)
         </span>
       </div>
       
-      <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[120px] text-lg">
-        <span id="profitLoss">Profit/Loss: 0 WAXP</span>
+      {gameState.profitLoss && (
+        <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[120px] text-lg">
+          <span id="profitLoss">
+            Profit/Loss: {gameState.profitLoss.profit - gameState.profitLoss.loss} WAXP
+          </span>
+        </div>
+      )}
+      
+      <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[150px] text-lg">
+        <span id="roundInfo">
+          {gameState.hasClaimedCell ? "Cell claimed" : "No cell claimed yet"}
+        </span>
       </div>
     </div>
   );
