@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { WalletType, WaxUser, GameState, WaxBalance } from '@/types/waxTypes';
 import { waxService } from '@/services/waxService';
@@ -7,10 +8,11 @@ interface WaxWalletContextType {
   gameState: GameState;
   login: (walletType: WalletType) => Promise<boolean>;
   logout: () => Promise<void>;
-  claimCell: (x: number, y: number) => Promise<boolean>;
-  payParkingFee: (fee: number) => Promise<boolean>;
+  claimPlot: (x: number, y: number) => Promise<boolean>;
+  payPlotFee: (fee: number, ownerAccount: string | null) => Promise<boolean>;
   collectTreasure: (value: number) => Promise<boolean>;
-  resetCellClaim: () => void;
+  resetPlotClaim: () => void;
+  buyGold: (waxAmount: number) => Promise<boolean>;
 }
 
 const WaxWalletContext = createContext<WaxWalletContextType | undefined>(undefined);
@@ -21,8 +23,9 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
     isAuthenticated: false,
     walletType: null,
     currentPosition: null,
-    hasClaimedCell: false,
+    hasClaimedPlot: false,
     balance: null,
+    goldBalance: 10000, // Starting gold balance
     profitLoss: {
       profit: 0,
       loss: 0
@@ -54,7 +57,8 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
         isAuthenticated: gameState.isAuthenticated,
         walletType: gameState.walletType,
         currentPosition: gameState.currentPosition,
-        hasClaimedCell: gameState.hasClaimedCell,
+        hasClaimedPlot: gameState.hasClaimedPlot,
+        goldBalance: gameState.goldBalance,
         profitLoss: gameState.profitLoss
       };
       localStorage.setItem('pyrameme-session', JSON.stringify(sessionData));
@@ -81,8 +85,9 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
           isAuthenticated: true,
           walletType,
           currentPosition: null,
-          hasClaimedCell: false,
+          hasClaimedPlot: false,
           balance,
+          goldBalance: 10000, // Starting gold
           profitLoss: {
             profit: 0,
             loss: 0
@@ -105,8 +110,9 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
       isAuthenticated: false,
       walletType: null,
       currentPosition: null,
-      hasClaimedCell: false,
+      hasClaimedPlot: false,
       balance: null,
+      goldBalance: 0,
       profitLoss: {
         profit: 0,
         loss: 0
@@ -114,73 +120,110 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
     });
   };
 
-  const claimCell = async (x: number, y: number): Promise<boolean> => {
+  // New function to buy gold with WAXP
+  const buyGold = async (waxAmount: number): Promise<boolean> => {
     if (!gameState.isAuthenticated || !gameState.userId) {
       toast.error("Please login first");
       return false;
     }
 
     try {
-      const cost = (x === 0 && y === 0) || (x === 14 && y === 14) ? 20 : 5; // Corner cells cost more
-      
       // Check if user has enough balance
-      if (gameState.balance && parseFloat(gameState.balance.waxp) < cost) {
-        toast.error(`Insufficient funds! You need ${cost} WAXP to claim this cell.`);
+      if (gameState.balance && parseFloat(gameState.balance.waxp) < waxAmount) {
+        toast.error(`Insufficient WAXP! You need ${waxAmount} WAXP to buy gold.`);
+        return false;
+      }
+
+      // 1 WAXP = 1000 gold conversion rate
+      const goldAmount = waxAmount * 1000;
+      
+      const result = await waxService.buyGold(gameState.userId, waxAmount);
+      
+      if (result) {
+        // Update the game state
+        setGameState(prev => ({
+          ...prev,
+          balance: prev.balance ? {
+            ...prev.balance,
+            waxp: (parseFloat(prev.balance.waxp) - waxAmount).toFixed(4)
+          } : null,
+          goldBalance: prev.goldBalance + goldAmount
+        }));
+        
+        toast.success(`Purchased ${goldAmount} gold for ${waxAmount} WAXP`);
+      }
+      
+      return result;
+    } catch (error) {
+      console.error("Error buying gold:", error);
+      toast.error("Failed to buy gold");
+      return false;
+    }
+  };
+
+  const claimPlot = async (x: number, y: number): Promise<boolean> => {
+    if (!gameState.isAuthenticated || !gameState.userId) {
+      toast.error("Please login first");
+      return false;
+    }
+
+    try {
+      // Edge plots cost 2000 gold, inner plots cost 1000 gold
+      const isEdgePlot = x === 0 || y === 0 || x === 14 || y === 14;
+      const cost = isEdgePlot ? 2000 : 1000;
+      
+      // Check if user has enough gold balance
+      if (gameState.goldBalance < cost) {
+        toast.error(`Insufficient gold! You need ${cost} gold to claim this plot.`);
         return false;
       }
       
-      const result = await waxService.claimCell(gameState.userId, x, y);
+      const result = await waxService.claimPlot(gameState.userId, x, y);
       
       if (result) {
         // Update the game state
         setGameState(prev => ({
           ...prev,
           currentPosition: { x, y },
-          hasClaimedCell: true,
-          balance: prev.balance ? {
-            ...prev.balance,
-            waxp: (parseFloat(prev.balance.waxp) - cost).toFixed(4)
-          } : null,
+          hasClaimedPlot: true,
+          goldBalance: prev.goldBalance - cost,
           profitLoss: {
             ...prev.profitLoss!,
             loss: prev.profitLoss!.loss + cost
           }
         }));
         
-        toast.success(`Cell claimed at position [${x}, ${y}] for ${cost} WAXP`);
+        toast.success(`Plot claimed at position [${x}, ${y}] for ${cost} gold`);
       }
       
       return result;
     } catch (error) {
-      console.error("Error claiming cell:", error);
-      toast.error("Failed to claim cell");
+      console.error("Error claiming plot:", error);
+      toast.error("Failed to claim plot");
       return false;
     }
   };
   
-  const payParkingFee = async (fee: number): Promise<boolean> => {
+  const payPlotFee = async (fee: number, ownerAccount: string | null): Promise<boolean> => {
     if (!gameState.isAuthenticated || !gameState.userId) {
       toast.error("Please login first");
       return false;
     }
     
     try {
-      // Check if user has enough balance
-      if (gameState.balance && parseFloat(gameState.balance.waxp) < fee) {
-        toast.error(`Insufficient funds! You need ${fee} WAXP to pay the parking fee.`);
+      // Check if user has enough gold balance
+      if (gameState.goldBalance < fee) {
+        toast.error(`Insufficient gold! You need ${fee} gold to pay the plot fee.`);
         return false;
       }
       
-      const result = await waxService.payParkingFee(gameState.userId, fee);
+      const result = await waxService.payPlotFee(gameState.userId, fee, ownerAccount);
       
       if (result) {
         // Update the game state
         setGameState(prev => ({
           ...prev,
-          balance: prev.balance ? {
-            ...prev.balance,
-            waxp: (parseFloat(prev.balance.waxp) - fee).toFixed(4)
-          } : null,
+          goldBalance: prev.goldBalance - fee,
           profitLoss: {
             ...prev.profitLoss!,
             loss: prev.profitLoss!.loss + fee
@@ -190,8 +233,8 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
       
       return result;
     } catch (error) {
-      console.error("Error paying parking fee:", error);
-      toast.error("Failed to pay parking fee");
+      console.error("Error paying plot fee:", error);
+      toast.error("Failed to pay plot fee");
       return false;
     }
   };
@@ -205,13 +248,10 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
       const result = await waxService.collectTreasure(gameState.userId, value);
       
       if (result) {
-        // Update the game state
+        // Update the game state with gold rather than WAXP
         setGameState(prev => ({
           ...prev,
-          balance: prev.balance ? {
-            ...prev.balance,
-            waxp: (parseFloat(prev.balance.waxp) + value).toFixed(4)
-          } : null,
+          goldBalance: prev.goldBalance + value,
           profitLoss: {
             ...prev.profitLoss!,
             profit: prev.profitLoss!.profit + value
@@ -226,15 +266,15 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
     }
   };
 
-  // New function to reset cell claim status
-  const resetCellClaim = () => {
+  // Function to reset plot claim status
+  const resetPlotClaim = () => {
     setGameState(prev => ({
       ...prev,
       currentPosition: null,
-      hasClaimedCell: false
+      hasClaimedPlot: false
     }));
     
-    toast.info("All cells have been relinquished for the next round!");
+    toast.info("All plots have been relinquished for the next round!");
   };
 
   return (
@@ -242,10 +282,11 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
       gameState, 
       login, 
       logout, 
-      claimCell,
-      payParkingFee,
+      claimPlot,
+      payPlotFee,
       collectTreasure,
-      resetCellClaim
+      resetPlotClaim,
+      buyGold
     }}>
       {children}
     </WaxWalletContext.Provider>

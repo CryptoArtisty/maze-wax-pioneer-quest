@@ -86,46 +86,62 @@ class WaxWalletService {
     };
   }
 
-  async claimCell(account: string, x: number, y: number): Promise<boolean> {
+  async claimPlot(account: string, x: number, y: number): Promise<boolean> {
     try {
-      console.log(`Claiming cell (${x}, ${y}) for account ${account}...`);
+      console.log(`Claiming plot (${x}, ${y}) for account ${account}...`);
       toast.info("Processing transaction...");
       
       // Simulate transaction delay
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Simulate successful transaction
-      toast.success("Successfully claimed cell!");
+      toast.success("Successfully claimed plot!");
       return true;
     } catch (error) {
-      console.error("Failed to claim cell:", error);
+      console.error("Failed to claim plot:", error);
       toast.error("Transaction failed");
       return false;
     }
   }
 
-  // New methods for the expanded game functionality
-  
-  async payParkingFee(account: string, fee: number): Promise<boolean> {
+  // New method for buying gold with WAXP
+  async buyGold(account: string, waxAmount: number): Promise<boolean> {
     try {
-      console.log(`Paying ${fee} WAXP parking fee from ${account}`);
-      toast.info(`Processing ${fee} WAXP parking fee...`);
+      console.log(`Buying gold with ${waxAmount} WAXP for account ${account}`);
+      toast.info(`Processing purchase of gold with ${waxAmount} WAXP...`);
+      
+      // Simulate transaction delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      toast.success(`Successfully purchased gold with ${waxAmount} WAXP`);
+      return true;
+    } catch (error) {
+      console.error("Failed to buy gold:", error);
+      toast.error("Gold purchase transaction failed");
+      return false;
+    }
+  }
+  
+  async payPlotFee(account: string, fee: number, ownerAccount: string | null): Promise<boolean> {
+    try {
+      console.log(`Paying ${fee} gold plot fee from ${account} to ${ownerAccount || "developer"}`);
+      toast.info(`Processing ${fee} gold plot fee...`);
       
       // Simulate transaction delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      toast.success(`Paid ${fee} WAXP parking fee`);
+      toast.success(`Paid ${fee} gold plot fee`);
       return true;
     } catch (error) {
-      console.error("Failed to pay parking fee:", error);
-      toast.error("Parking fee transaction failed");
+      console.error("Failed to pay plot fee:", error);
+      toast.error("Plot fee transaction failed");
       return false;
     }
   }
   
   async collectTreasure(account: string, value: number): Promise<boolean> {
     try {
-      console.log(`Collecting ${value} WAXP treasure for ${account}`);
+      console.log(`Collecting ${value} gold treasure for ${account}`);
       
       // Simulate transaction delay
       await new Promise(resolve => setTimeout(resolve, 500));

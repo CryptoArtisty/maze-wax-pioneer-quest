@@ -20,8 +20,9 @@ export interface GameState {
   isAuthenticated: boolean;
   walletType: WalletType | null;
   currentPosition: { x: number, y: number } | null;
-  hasClaimedCell: boolean;
+  hasClaimedPlot: boolean;
   balance: WaxBalance | null;
+  goldBalance: number;
   profitLoss: {
     profit: number;
     loss: number;

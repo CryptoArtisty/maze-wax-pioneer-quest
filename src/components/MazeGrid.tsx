@@ -12,7 +12,7 @@ interface MazeGridProps {
 }
 
 const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChange }) => {
-  const { gameState, claimCell } = useWaxWallet();
+  const { gameState, claimPlot, payPlotFee, collectTreasure } = useWaxWallet();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gridCells, setGridCells] = useState<GridCell[][]>([]);
   const [maze, setMaze] = useState<MazeCell[]>([]);
@@ -288,7 +288,8 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
       const row = Math.floor(Math.random() * rows);
       
       if (!newTreasures.find(t => t.col === col && t.row === row)) {
-        const value = Math.floor(Math.sqrt(col * col + row * row)) * 5;
+        // Treasure values are now in gold
+        const value = Math.floor(Math.sqrt(col * col + row * row)) * 500; // 100x more gold than before
         newTreasures.push({ col, row, collected: false, value });
       }
     }
@@ -349,20 +350,43 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
       return;
     }
     
-    // Check if stepping on someone else's cell - would require parking fee
-    const PARKING_FEE = 5; // 5 WAXP parking fee
+    // Check if stepping on someone else's plot - would require plot fee
+    const PLOT_FEE = 50; // 50 gold plot fee
     
     const cellInfo = gridCells[newRow][newCol];
     if (cellInfo && cellInfo.owner && cellInfo.owner !== gameState.userId) {
-      // Here would be logic for WAXP transaction
-      toast(`Paid ${PARKING_FEE} WAXP parking fee to ${cellInfo.owner}`);
+      // Process the plot fee payment
+      payPlotFee(PLOT_FEE, cellInfo.owner).then(success => {
+        if (success) {
+          toast(`Paid ${PLOT_FEE} gold plot fee to ${cellInfo.nickname || cellInfo.owner}`);
+          
+          // Continue with movement after successful fee payment
+          setPlayer({ col: newCol, row: newRow });
+          checkForTreasure(newCol, newRow);
+          
+          // Check if player reached exit
+          if (exitCell && newCol === exitCell.col && newRow === exitCell.row) {
+            toast("You reached the exit! Game complete!");
+            // Would trigger game end logic
+          }
+        }
+      });
+    } else {
+      // No fee required, just move
+      setPlayer({ col: newCol, row: newRow });
+      checkForTreasure(newCol, newRow);
+      
+      // Check if player reached exit
+      if (exitCell && newCol === exitCell.col && newRow === exitCell.row) {
+        toast("You reached the exit! Game complete!");
+        // Would trigger game end logic
+      }
     }
-    
-    setPlayer({ col: newCol, row: newRow });
-    
-    // Check if player found a treasure
+  }
+  
+  function checkForTreasure(col: number, row: number) {
     treasures.forEach((treasure, index) => {
-      if (!treasure.collected && treasure.col === newCol && treasure.row === newRow) {
+      if (!treasure.collected && treasure.col === col && treasure.row === row) {
         const newTreasures = [...treasures];
         newTreasures[index].collected = true;
         setTreasures(newTreasures);
@@ -371,15 +395,12 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
         const newScore = score + treasure.value;
         setScore(newScore);
         onScoreChange(newScore);
-        toast(`Found treasure: +${treasure.value} WAXP!`);
+        
+        // Collect treasure gold
+        collectTreasure(treasure.value);
+        toast(`Found treasure: +${treasure.value} gold!`);
       }
     });
-    
-    // Check if player reached exit
-    if (exitCell && newCol === exitCell.col && newRow === exitCell.row) {
-      toast("You reached the exit! Game complete!");
-      // Would trigger game end logic
-    }
   }
 
   // Handle cell click
@@ -393,23 +414,23 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
     
     if (gamePhase === 'claim') {
       if (!gameState.isAuthenticated) {
-        toast("Please login to claim a cell");
+        toast("Please login to claim a plot");
         return;
       }
       
-      if (gameState.hasClaimedCell) {
-        toast("You've already claimed a cell this phase!");
+      if (gameState.hasClaimedPlot) {
+        toast("You've already claimed a plot this phase!");
         return;
       }
       
-      // Check if cell is already claimed
+      // Check if plot is already claimed
       if (gridCells[cellRow][cellCol].owner) {
-        toast(`Cell (${cellCol},${cellRow}) already claimed.`);
+        toast(`Plot (${cellCol},${cellRow}) already claimed.`);
         return;
       }
       
-      // Claim the cell
-      const success = await claimCell(cellCol, cellRow);
+      // Claim the plot
+      const success = await claimPlot(cellCol, cellRow);
       if (success) {
         const newGridCells = [...gridCells];
         newGridCells[cellRow][cellCol].owner = gameState.userId || null;
@@ -482,7 +503,7 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
       
       <div className="mt-4 text-center text-sm text-muted-foreground">
         {gamePhase === 'claim' ? (
-          <p>Click on a cell to claim your starting position</p>
+          <p>Click on a plot to claim your starting position</p>
         ) : (
           <p>
             {player ? 

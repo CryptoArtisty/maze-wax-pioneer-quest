@@ -2,6 +2,7 @@
 import React from 'react';
 import { useWaxWallet } from '@/contexts/WaxWalletContext';
 import { GamePhase } from '@/types/gameTypes';
+import { Coins } from 'lucide-react';
 
 interface GameHUDProps {
   score: number;
@@ -34,6 +35,11 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNum
         </div>
       )}
       
+      <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[120px] text-lg overflow-hidden text-ellipsis whitespace-nowrap flex items-center gap-1">
+        <Coins size={18} className="text-yellow-400" />
+        <span id="goldBalance">Gold: {gameState.goldBalance}</span>
+      </div>
+      
       <div 
         className={`card p-3 border-2 border-gold rounded-lg min-w-[120px] text-lg ${
           gamePhase === 'claim' ? 'bg-[#FF8C00]/70' : 'bg-[#008000]/70'
@@ -47,14 +53,14 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNum
       {gameState.profitLoss && (
         <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[120px] text-lg">
           <span id="profitLoss">
-            Profit/Loss: {gameState.profitLoss.profit - gameState.profitLoss.loss} WAXP
+            Profit/Loss: {gameState.profitLoss.profit - gameState.profitLoss.loss} gold
           </span>
         </div>
       )}
       
       <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[150px] text-lg">
         <span id="roundInfo">
-          {gameState.hasClaimedCell ? "Cell claimed" : "No cell claimed yet"}
+          {gameState.hasClaimedPlot ? "Plot claimed" : "No plot claimed yet"}
         </span>
       </div>
     </div>
