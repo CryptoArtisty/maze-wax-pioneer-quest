@@ -27,4 +27,5 @@ export interface GameState {
     profit: number;
     loss: number;
   } | null;
+  lastFee: number; // Track the last fee paid
 }

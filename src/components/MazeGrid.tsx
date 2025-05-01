@@ -36,6 +36,21 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
     setGridCells(newGridCells);
   }, [rows, cols]);
 
+  // Reset grid cells at the start of a new claim phase
+  useEffect(() => {
+    if (gamePhase === 'claim') {
+      // Clear all cell claims for a fresh round
+      const newGridCells: GridCell[][] = [];
+      for (let r = 0; r < rows; r++) {
+        newGridCells[r] = [];
+        for (let c = 0; c < cols; c++) {
+          newGridCells[r][c] = { owner: null, nickname: "" };
+        }
+      }
+      setGridCells(newGridCells);
+    }
+  }, [gamePhase, rows, cols]);
+
   // Initialize maze when phase changes to play
   useEffect(() => {
     if (gamePhase === 'play' && gameState.currentPosition) {
@@ -98,13 +113,15 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
       ctx.stroke();
     }
     
-    // Draw claimed cells
+    // Draw claimed plots - now with just one checkmark
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         if (gridCells[r] && gridCells[r][c] && gridCells[r][c].owner) {
+          // Add a subtle background to claimed plots
           ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
           ctx.fillRect(c * CELL_SIZE, r * CELL_SIZE, CELL_SIZE, CELL_SIZE);
           
+          // Draw a single checkmark
           ctx.font = `bold ${CELL_SIZE / 2}px sans-serif`;
           ctx.fillStyle = "#FFD700"; // Gold color
           ctx.textAlign = "center";
@@ -436,6 +453,9 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
         newGridCells[cellRow][cellCol].owner = gameState.userId || null;
         newGridCells[cellRow][cellCol].nickname = gameState.userId?.substring(0, 3) || "";
         setGridCells(newGridCells);
+        
+        // Show the plot claimed message
+        toast.success(`You claimed plot (${cellCol}, ${cellRow})`);
       }
     } else if (gamePhase === 'play' && player) {
       // Try to move player to clicked cell

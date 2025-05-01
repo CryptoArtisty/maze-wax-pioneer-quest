@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { WalletType, WaxUser, GameState, WaxBalance } from '@/types/waxTypes';
 import { waxService } from '@/services/waxService';
@@ -29,7 +28,8 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
     profitLoss: {
       profit: 0,
       loss: 0
-    }
+    },
+    lastFee: 0
   });
 
   // Check for existing session on mount
@@ -40,7 +40,11 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
         const session = JSON.parse(savedSession);
         setGameState(prevState => ({
           ...prevState,
-          ...session
+          ...session,
+          // Reset these values on login
+          currentPosition: null,
+          hasClaimedPlot: false,
+          lastFee: 0
         }));
       } catch (error) {
         console.error("Failed to restore session:", error);
@@ -56,16 +60,30 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
         userId: gameState.userId,
         isAuthenticated: gameState.isAuthenticated,
         walletType: gameState.walletType,
-        currentPosition: gameState.currentPosition,
-        hasClaimedPlot: gameState.hasClaimedPlot,
         goldBalance: gameState.goldBalance,
-        profitLoss: gameState.profitLoss
+        profitLoss: gameState.profitLoss,
+        balance: gameState.balance
+        // Don't save currentPosition, hasClaimedPlot, or lastFee
       };
       localStorage.setItem('pyrameme-session', JSON.stringify(sessionData));
     } else {
       localStorage.removeItem('pyrameme-session');
     }
   }, [gameState]);
+
+  // Clear lastFee after a delay
+  useEffect(() => {
+    if (gameState.lastFee > 0) {
+      const timer = setTimeout(() => {
+        setGameState(prev => ({
+          ...prev,
+          lastFee: 0
+        }));
+      }, 3000); // Show fee for 3 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [gameState.lastFee]);
 
   const login = async (walletType: WalletType): Promise<boolean> => {
     let user: WaxUser | null = null;
@@ -84,14 +102,15 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
           userId: user.account,
           isAuthenticated: true,
           walletType,
-          currentPosition: null,
-          hasClaimedPlot: false,
+          currentPosition: null, // Reset when logging in
+          hasClaimedPlot: false, // Reset when logging in
           balance,
           goldBalance: 10000, // Starting gold
           profitLoss: {
             profit: 0,
             loss: 0
-          }
+          },
+          lastFee: 0
         });
         return true;
       }
@@ -116,7 +135,8 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
       profitLoss: {
         profit: 0,
         loss: 0
-      }
+      },
+      lastFee: 0
     });
   };
 
@@ -187,6 +207,7 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
           currentPosition: { x, y },
           hasClaimedPlot: true,
           goldBalance: prev.goldBalance - cost,
+          lastFee: cost,
           profitLoss: {
             ...prev.profitLoss!,
             loss: prev.profitLoss!.loss + cost
@@ -224,6 +245,7 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
         setGameState(prev => ({
           ...prev,
           goldBalance: prev.goldBalance - fee,
+          lastFee: fee,
           profitLoss: {
             ...prev.profitLoss!,
             loss: prev.profitLoss!.loss + fee

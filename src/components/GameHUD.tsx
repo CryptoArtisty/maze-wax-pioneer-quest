@@ -63,6 +63,14 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNum
           {gameState.hasClaimedPlot ? "Plot claimed" : "No plot claimed yet"}
         </span>
       </div>
+      
+      {gameState.lastFee > 0 && (
+        <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-red-500 rounded-lg min-w-[120px] text-lg animate-pulse">
+          <span id="lastTransaction" className="text-red-400">
+            -${gameState.lastFee} gold
+          </span>
+        </div>
+      )}
     </div>
   );
 };
