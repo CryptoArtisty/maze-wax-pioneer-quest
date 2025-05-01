@@ -45,8 +45,8 @@ export function useGamePhase(
         // Reset plot claim status for next round
         resetPlotClaim();
         
-        // Increment round number
-        setRoundNumber(prev => prev + 1);
+        // Increment round number - Fix: change to use value instead of callback
+        setRoundNumber(roundNumber + 1);
         
         // Reset score for new round
         setScore(0);
@@ -59,7 +59,7 @@ export function useGamePhase(
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [phaseTime, gamePhase, gameState.hasClaimedPlot, gameState.currentPosition, score, resetPlotClaim, setRoundNumber, setScore, setIsVictoryModalOpen]);
+  }, [phaseTime, gamePhase, gameState.hasClaimedPlot, gameState.currentPosition, score, resetPlotClaim, setRoundNumber, setScore, setIsVictoryModalOpen, roundNumber]);
 
   return { gamePhase, phaseTime };
 }

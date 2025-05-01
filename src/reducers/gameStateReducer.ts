@@ -10,6 +10,7 @@ export enum GameActionType {
   RESET_PLOT_CLAIM = 'RESET_PLOT_CLAIM',
   BUY_GOLD = 'BUY_GOLD',
   CLEAR_FEE = 'CLEAR_FEE',
+  CLEAR_COLLECTION = 'CLEAR_COLLECTION',
 }
 
 export type GameAction =
@@ -20,7 +21,8 @@ export type GameAction =
   | { type: GameActionType.COLLECT_TREASURE; value: number }
   | { type: GameActionType.RESET_PLOT_CLAIM }
   | { type: GameActionType.BUY_GOLD; waxAmount: number; goldAmount: number }
-  | { type: GameActionType.CLEAR_FEE };
+  | { type: GameActionType.CLEAR_FEE }
+  | { type: GameActionType.CLEAR_COLLECTION };
 
 export const initialGameState: GameState = {
   userId: null,
@@ -35,6 +37,7 @@ export const initialGameState: GameState = {
     loss: 0,
   },
   lastFee: 0,
+  lastCollection: 0,
 };
 
 export function gameStateReducer(state: GameState, action: GameAction): GameState {
@@ -54,6 +57,7 @@ export function gameStateReducer(state: GameState, action: GameAction): GameStat
           loss: 0,
         },
         lastFee: 0,
+        lastCollection: 0,
       };
       
     case GameActionType.LOGOUT:
@@ -87,6 +91,7 @@ export function gameStateReducer(state: GameState, action: GameAction): GameStat
       return {
         ...state,
         goldBalance: state.goldBalance + action.value,
+        lastCollection: action.value,
         profitLoss: {
           ...state.profitLoss!,
           profit: state.profitLoss!.profit + action.value,
@@ -116,6 +121,12 @@ export function gameStateReducer(state: GameState, action: GameAction): GameStat
       return {
         ...state,
         lastFee: 0,
+      };
+      
+    case GameActionType.CLEAR_COLLECTION:
+      return {
+        ...state,
+        lastCollection: 0,
       };
       
     default:

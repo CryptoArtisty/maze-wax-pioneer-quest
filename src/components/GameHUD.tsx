@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useWaxWallet } from '@/contexts/WaxWalletContext';
 import { GamePhase } from '@/types/gameTypes';
 import { Coins } from 'lucide-react';
@@ -14,6 +14,28 @@ interface GameHUDProps {
 const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNumber = 1 }) => {
   const { gameState } = useWaxWallet();
   const highScore = parseInt(localStorage.getItem('pyrameme-high-score') || '0');
+  const [showGoldChange, setShowGoldChange] = useState(false);
+  const [goldAnimation, setGoldAnimation] = useState<{amount: number, isPositive: boolean} | null>(null);
+  
+  // Track gold balance changes
+  useEffect(() => {
+    if (gameState.lastFee > 0) {
+      setGoldAnimation({ amount: gameState.lastFee, isPositive: false });
+      setShowGoldChange(true);
+      const timer = setTimeout(() => setShowGoldChange(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [gameState.lastFee]);
+  
+  // Track gold treasure collection changes
+  useEffect(() => {
+    if (gameState.lastCollection > 0) {
+      setGoldAnimation({ amount: gameState.lastCollection, isPositive: true });
+      setShowGoldChange(true);
+      const timer = setTimeout(() => setShowGoldChange(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [gameState.lastCollection]);
   
   return (
     <div id="hud" className="flex flex-wrap justify-center gap-2 px-4 my-5">
@@ -38,6 +60,17 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNum
       <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[120px] text-lg overflow-hidden text-ellipsis whitespace-nowrap flex items-center gap-1">
         <Coins size={18} className="text-yellow-400" />
         <span id="goldBalance">Gold: {gameState.goldBalance}</span>
+        
+        {/* Gold change indicator */}
+        {showGoldChange && goldAnimation && (
+          <span 
+            className={`ml-2 font-bold animate-fade-in ${
+              goldAnimation.isPositive ? 'text-green-500' : 'text-red-500'
+            }`}
+          >
+            {goldAnimation.isPositive ? '+' : '-'}{goldAnimation.amount}
+          </span>
+        )}
       </div>
       
       <div 
@@ -64,10 +97,20 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNum
         </span>
       </div>
       
+      {/* Gold fee indicator */}
       {gameState.lastFee > 0 && (
         <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-red-500 rounded-lg min-w-[120px] text-lg animate-pulse">
           <span id="lastTransaction" className="text-red-400">
             -${gameState.lastFee} gold
+          </span>
+        </div>
+      )}
+      
+      {/* Gold collection indicator */}
+      {gameState.lastCollection > 0 && (
+        <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-green-500 rounded-lg min-w-[120px] text-lg animate-pulse">
+          <span id="lastCollection" className="text-green-400">
+            +${gameState.lastCollection} gold
           </span>
         </div>
       )}

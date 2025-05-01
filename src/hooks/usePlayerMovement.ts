@@ -51,7 +51,7 @@ export function usePlayerMovement({
         setScore(newScore);
         onScoreChange(newScore);
         
-        // Collect treasure gold
+        // Collect treasure gold with visual feedback
         collectTreasure(treasure.value);
         toast(`Found treasure: +${treasure.value} gold!`);
       }
@@ -74,7 +74,13 @@ export function usePlayerMovement({
     
     const cellInfo = gridCells[newRow][newCol];
     if (cellInfo && cellInfo.owner && cellInfo.owner !== gameState.userId) {
-      // Process the plot fee payment
+      // Check if player has enough gold
+      if (gameState.goldBalance < PLOT_FEE) {
+        toast.error(`Not enough gold! Need ${PLOT_FEE} gold to move to another player's plot.`);
+        return;
+      }
+      
+      // Process the plot fee payment with visual indicator
       payPlotFee(PLOT_FEE, cellInfo.owner).then(success => {
         if (success) {
           toast(`Paid ${PLOT_FEE} gold plot fee to ${cellInfo.nickname || cellInfo.owner}`);
@@ -101,7 +107,7 @@ export function usePlayerMovement({
         // Would trigger game end logic
       }
     }
-  }, [player, maze, gridCells, gameState.userId, payPlotFee, setPlayer, checkForTreasure, exitCell, cols, rows]);
+  }, [player, maze, gridCells, gameState.userId, gameState.goldBalance, payPlotFee, setPlayer, checkForTreasure, exitCell, cols, rows]);
 
   return { movePlayer };
 }
