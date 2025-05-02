@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { GameState, WalletType } from '@/types/waxTypes';
 import { toast } from 'sonner';
@@ -15,6 +14,7 @@ interface WaxWalletContextType {
   collectTreasure: (value: number) => Promise<boolean>;
   resetPlotClaim: () => void;
   buyGold: (waxAmount: number) => Promise<boolean>;
+  payMovementFee: (fee: number, ownerAccount: string | null) => Promise<boolean>;
 }
 
 const WaxWalletContext = createContext<WaxWalletContextType | undefined>(undefined);
@@ -29,7 +29,8 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
     collectTreasure,
     resetPlotClaim,
     buyGold,
-    clearLastFee
+    clearLastFee,
+    payMovementFee
   } = useWaxWalletActions(dispatch);
 
   // Manage state persistence and side effects
@@ -120,6 +121,15 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
     return payPlotFee(fee, ownerAccount);
   };
   
+  // Wrapper for payMovementFee that does balance checking
+  const handlePayMovementFee = async (fee: number, ownerAccount: string | null): Promise<boolean> => {
+    if (!checkBalance(fee)) {
+      return false;
+    }
+    
+    return payMovementFee(fee, ownerAccount);
+  };
+  
   // Wrapper for buyGold that does balance checking
   const handleBuyGold = async (waxAmount: number): Promise<boolean> => {
     if (!gameState.isAuthenticated) {
@@ -145,7 +155,8 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
       payPlotFee: handlePayPlotFee,
       collectTreasure,
       resetPlotClaim,
-      buyGold: handleBuyGold
+      buyGold: handleBuyGold,
+      payMovementFee: handlePayMovementFee
     }}>
       {children}
     </WaxWalletContext.Provider>
