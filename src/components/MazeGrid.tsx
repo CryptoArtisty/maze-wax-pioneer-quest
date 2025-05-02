@@ -5,7 +5,7 @@ import { GamePhase } from '@/types/gameTypes';
 import GameCanvas from '@/components/game/GameCanvas';
 import { useGridInitializer } from '@/hooks/useGridInitializer';
 import PlayerController from '@/components/game/PlayerController';
-import { CellHandler } from '@/components/game/CellHandler';
+import { useCellHandler } from '@/components/game/CellHandler';
 import MazePath from '@/components/game/MazePath';
 
 interface MazeGridProps {
@@ -33,7 +33,7 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
   } = useGridInitializer({ rows, cols, gamePhase, gameState });
 
   // Use CellHandler to manage cell click interactions
-  const { handleCellClick } = CellHandler({
+  const { handleCellClick } = useCellHandler({
     gridCells,
     setGridCells,
     gameState,
