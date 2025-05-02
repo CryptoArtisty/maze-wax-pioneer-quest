@@ -64,7 +64,7 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNum
         {/* Gold change indicator */}
         {showGoldChange && goldAnimation && (
           <span 
-            className={`ml-2 font-bold animate-fade-in ${
+            className={`ml-2 font-bold gold-change ${
               goldAnimation.isPositive ? 'text-green-500' : 'text-red-500'
             }`}
           >
@@ -97,9 +97,16 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNum
         </span>
       </div>
       
+      {/* Treasury balance */}
+      <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[150px] text-lg">
+        <span id="treasuryBalance">
+          Treasury: {gameState.treasuryBalance} gold
+        </span>
+      </div>
+      
       {/* Gold fee indicator */}
       {gameState.lastFee > 0 && (
-        <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-red-500 rounded-lg min-w-[120px] text-lg animate-pulse">
+        <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-red-500 rounded-lg min-w-[120px] text-lg fee-indicator">
           <span id="lastTransaction" className="text-red-400">
             -${gameState.lastFee} gold
           </span>
@@ -108,7 +115,7 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNum
       
       {/* Gold collection indicator */}
       {gameState.lastCollection > 0 && (
-        <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-green-500 rounded-lg min-w-[120px] text-lg animate-pulse">
+        <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-green-500 rounded-lg min-w-[120px] text-lg collection-indicator">
           <span id="lastCollection" className="text-green-400">
             +${gameState.lastCollection} gold
           </span>

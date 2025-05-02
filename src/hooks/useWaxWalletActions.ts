@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { WalletType, WaxUser } from '@/types/waxTypes';
 import { waxService } from '@/services/waxService';
@@ -136,13 +135,36 @@ export function useWaxWalletActions(dispatch: React.Dispatch<GameAction>) {
       return false;
     }
   }, [dispatch]);
+  
+  const payMovementFee = useCallback(async (fee: number, ownerAccount: string | null): Promise<boolean> => {
+    try {
+      const toTreasury = ownerAccount === null;
+      const user = waxService.getDeveloperWalletAddress();
+      
+      // Simulate API call - would call waxService.payMovementFee in production
+      const result = true; // Assuming success for now
+      
+      if (result) {
+        dispatch({
+          type: GameActionType.PAY_MOVEMENT_FEE,
+          fee,
+          toTreasury
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error("Error paying movement fee:", error);
+      toast.error("Failed to pay movement fee");
+      return false;
+    }
+  }, [dispatch]);
 
   const resetPlotClaim = useCallback(() => {
     dispatch({ type: GameActionType.RESET_PLOT_CLAIM });
     toast.info("All plots have been relinquished for the next round!");
   }, [dispatch]);
 
-  // Function to clear the last fee display after a timeout
   const clearLastFee = useCallback(() => {
     dispatch({ type: GameActionType.CLEAR_FEE });
   }, [dispatch]);
@@ -154,6 +176,7 @@ export function useWaxWalletActions(dispatch: React.Dispatch<GameAction>) {
     claimPlot,
     payPlotFee,
     collectTreasure,
+    payMovementFee,
     resetPlotClaim,
     clearLastFee
   };

@@ -1,3 +1,4 @@
+
 export interface WaxUser {
   account: string;
   publicKey: string;
@@ -28,4 +29,5 @@ export interface GameState {
   } | null;
   lastFee: number;
   lastCollection: number;
+  treasuryBalance: number; // New field to track treasury balance
 }

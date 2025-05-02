@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useWaxWallet } from '@/contexts/WaxWalletContext';
 import { toast } from 'sonner';
@@ -15,7 +14,7 @@ interface MazeGridProps {
 }
 
 const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChange }) => {
-  const { gameState, claimPlot, payPlotFee, collectTreasure } = useWaxWallet();
+  const { gameState, claimPlot, payPlotFee, payMovementFee, collectTreasure } = useWaxWallet();
   const [gridCells, setGridCells] = useState<GridCell[][]>([]);
   const [maze, setMaze] = useState<MazeCell[]>([]);
   const [player, setPlayer] = useState<PlayerPosition | null>(null);
@@ -69,7 +68,7 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
     }
   }, [gamePhase, gameState.currentPosition, rows, cols]);
 
-  // Use player movement hook
+  // Use player movement hook with the new payMovementFee function
   const { movePlayer } = usePlayerMovement({
     player,
     setPlayer,
@@ -80,6 +79,7 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
     exitCell,
     gameState,
     payPlotFee,
+    payMovementFee, // Add payMovementFee
     collectTreasure,
     score,
     setScore,

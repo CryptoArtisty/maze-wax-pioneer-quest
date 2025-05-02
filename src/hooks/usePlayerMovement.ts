@@ -14,6 +14,7 @@ interface UsePlayerMovementProps {
   exitCell: ExitCell | null;
   gameState: any;
   payPlotFee: (fee: number, owner: string | null) => Promise<boolean>;
+  payMovementFee: (fee: number, owner: string | null) => Promise<boolean>;
   collectTreasure: (value: number) => Promise<boolean>;
   score: number;
   setScore: (score: number) => void;
@@ -32,6 +33,7 @@ export function usePlayerMovement({
   exitCell,
   gameState,
   payPlotFee,
+  payMovementFee,
   collectTreasure,
   score,
   setScore,
@@ -69,21 +71,28 @@ export function usePlayerMovement({
       return;
     }
     
-    // Check if stepping on someone else's plot - would require plot fee
-    const PLOT_FEE = 50; // 50 gold plot fee
-    
+    const MOVEMENT_FEE = 50; // 50 gold movement fee
     const cellInfo = gridCells[newRow][newCol];
-    if (cellInfo && cellInfo.owner && cellInfo.owner !== gameState.userId) {
+    
+    // Check if trying to move to own plot (no fee) or other's/unowned plot (fee required)
+    const isOwnPlot = cellInfo && cellInfo.owner === gameState.userId;
+    
+    // If not own plot, charge movement fee
+    if (!isOwnPlot) {
       // Check if player has enough gold
-      if (gameState.goldBalance < PLOT_FEE) {
-        toast.error(`Not enough gold! Need ${PLOT_FEE} gold to move to another player's plot.`);
+      if (gameState.goldBalance < MOVEMENT_FEE) {
+        toast.error(`Not enough gold! Need ${MOVEMENT_FEE} gold to move to this plot.`);
         return;
       }
       
-      // Process the plot fee payment with visual indicator
-      payPlotFee(PLOT_FEE, cellInfo.owner).then(success => {
+      // Process the movement fee payment with visual indicator
+      payMovementFee(MOVEMENT_FEE, cellInfo?.owner || null).then(success => {
         if (success) {
-          toast(`Paid ${PLOT_FEE} gold plot fee to ${cellInfo.nickname || cellInfo.owner}`);
+          const ownerText = cellInfo?.owner 
+            ? `${cellInfo.nickname || cellInfo.owner}` 
+            : "treasury";
+          
+          toast(`Paid ${MOVEMENT_FEE} gold movement fee to ${ownerText}`);
           
           // Continue with movement after successful fee payment
           setPlayer({ col: newCol, row: newRow });
@@ -92,22 +101,20 @@ export function usePlayerMovement({
           // Check if player reached exit
           if (exitCell && newCol === exitCell.col && newRow === exitCell.row) {
             toast("You reached the exit! Game complete!");
-            // Would trigger game end logic
           }
         }
       });
     } else {
-      // No fee required, just move
+      // No fee required for own plot, just move
       setPlayer({ col: newCol, row: newRow });
       checkForTreasure(newCol, newRow);
       
       // Check if player reached exit
       if (exitCell && newCol === exitCell.col && newRow === exitCell.row) {
         toast("You reached the exit! Game complete!");
-        // Would trigger game end logic
       }
     }
-  }, [player, maze, gridCells, gameState.userId, gameState.goldBalance, payPlotFee, setPlayer, checkForTreasure, exitCell, cols, rows]);
+  }, [player, maze, gridCells, gameState.userId, gameState.goldBalance, payMovementFee, setPlayer, checkForTreasure, exitCell, cols, rows]);
 
   return { movePlayer };
 }

@@ -11,6 +11,7 @@ export enum GameActionType {
   BUY_GOLD = 'BUY_GOLD',
   CLEAR_FEE = 'CLEAR_FEE',
   CLEAR_COLLECTION = 'CLEAR_COLLECTION',
+  PAY_MOVEMENT_FEE = 'PAY_MOVEMENT_FEE', // New action type for movement fees
 }
 
 export type GameAction =
@@ -22,7 +23,8 @@ export type GameAction =
   | { type: GameActionType.RESET_PLOT_CLAIM }
   | { type: GameActionType.BUY_GOLD; waxAmount: number; goldAmount: number }
   | { type: GameActionType.CLEAR_FEE }
-  | { type: GameActionType.CLEAR_COLLECTION };
+  | { type: GameActionType.CLEAR_COLLECTION }
+  | { type: GameActionType.PAY_MOVEMENT_FEE; fee: number; toTreasury: boolean }; // New action type
 
 export const initialGameState: GameState = {
   userId: null,
@@ -38,6 +40,7 @@ export const initialGameState: GameState = {
   },
   lastFee: 0,
   lastCollection: 0,
+  treasuryBalance: 0, // Initialize treasury balance
 };
 
 export function gameStateReducer(state: GameState, action: GameAction): GameState {
@@ -58,6 +61,7 @@ export function gameStateReducer(state: GameState, action: GameAction): GameStat
         },
         lastFee: 0,
         lastCollection: 0,
+        treasuryBalance: 0, // Reset treasury balance
       };
       
     case GameActionType.LOGOUT:
@@ -127,6 +131,18 @@ export function gameStateReducer(state: GameState, action: GameAction): GameStat
       return {
         ...state,
         lastCollection: 0,
+      };
+
+    case GameActionType.PAY_MOVEMENT_FEE:
+      return {
+        ...state,
+        goldBalance: state.goldBalance - action.fee,
+        lastFee: action.fee,
+        treasuryBalance: action.toTreasury ? state.treasuryBalance + action.fee : state.treasuryBalance,
+        profitLoss: {
+          ...state.profitLoss!,
+          loss: state.profitLoss!.loss + action.fee,
+        },
       };
       
     default:
