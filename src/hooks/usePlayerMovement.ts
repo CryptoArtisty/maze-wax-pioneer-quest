@@ -1,8 +1,9 @@
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { canMoveTo } from '@/utils/mazeUtils';
 import { MazeCell, GridCell, PlayerPosition, Treasure, ExitCell } from '@/types/gameTypes';
+import { GameState } from '@/types/waxTypes';
 
 interface UsePlayerMovementProps {
   player: PlayerPosition | null;
@@ -12,7 +13,7 @@ interface UsePlayerMovementProps {
   treasures: Treasure[];
   setTreasures: (treasures: Treasure[]) => void;
   exitCell: ExitCell | null;
-  gameState: any;
+  gameState: GameState;
   payPlotFee: (fee: number, owner: string | null) => Promise<boolean>;
   payMovementFee: (fee: number, owner: string | null) => Promise<boolean>;
   collectTreasure: (value: number) => Promise<boolean>;
