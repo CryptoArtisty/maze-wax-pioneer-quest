@@ -64,6 +64,26 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
     return () => window.removeEventListener('maze-move-player', moveHandler as EventListener);
   }, []);
   
+  // Add event listener for hint button in BottomBar
+  React.useEffect(() => {
+    const hintHandler = () => {
+      if (player && exitCell && maze.length > 0) {
+        const path = findPath(player, exitCell, maze, cols, rows);
+        if (path.length > 0) {
+          setHintPaths([path]);
+          
+          // Clear hint paths after 6 seconds
+          setTimeout(() => {
+            setHintPaths([]);
+          }, 6000);
+        }
+      }
+    };
+
+    window.addEventListener('show-maze-hint', hintHandler);
+    return () => window.removeEventListener('show-maze-hint', hintHandler);
+  }, [player, exitCell, maze, cols, rows]);
+  
   // Reference to the movePlayer function from PlayerController
   const playerControllerMovePlayer = React.useRef<(col: number, row: number) => void>();
   
@@ -135,5 +155,8 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
     </div>
   );
 };
+
+// Import the utility used in the new effect
+import { findPath } from '@/utils/mazeUtils';
 
 export default MazeGrid;

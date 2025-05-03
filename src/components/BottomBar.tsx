@@ -1,14 +1,13 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { toast } from 'sonner';
 import { useWaxWallet } from '@/contexts/WaxWalletContext';
 
 const BottomBar: React.FC = () => {
-  const { gameState } = useWaxWallet();
+  const { gameState, payMovementFee } = useWaxWallet();
   
-  const handleHint = () => {
-    const HINT_COST = 500; // Updated from 10 to 500
+  const handleHint = async () => {
+    const HINT_COST = 500;
     
     // Check if user is authenticated
     if (!gameState.isAuthenticated) {
@@ -16,15 +15,24 @@ const BottomBar: React.FC = () => {
       return;
     }
     
-    // Check if user has enough balance
-    if (gameState.balance && parseFloat(gameState.balance.waxp) < HINT_COST) {
-      toast("Not enough funds for a hint!");
+    // Check if user has enough gold balance
+    if (gameState.goldBalance < HINT_COST) {
+      toast.error(`Not enough gold! Need ${HINT_COST} gold for a hint.`);
       return;
     }
     
-    toast(`Used ${HINT_COST} WAXP for hint`);
+    // Pay for hint - send to treasury (null owner)
+    const success = await payMovementFee(HINT_COST, null);
+    if (!success) {
+      toast.error("Failed to process hint payment.");
+      return;
+    }
     
-    // Actual hint logic is now in the MazePath component
+    // Create and dispatch a custom event to trigger the hint functionality
+    const hintEvent = new CustomEvent('show-maze-hint');
+    window.dispatchEvent(hintEvent);
+    
+    toast.success(`Used ${HINT_COST} gold for hint`);
   };
   
   const handleShare = async () => {

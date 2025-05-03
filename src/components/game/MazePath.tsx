@@ -45,7 +45,7 @@ const MazePath: React.FC<MazePathProps> = ({
       return;
     }
 
-    // Pay for hint - always goes to treasury (null owner)
+    // Pay for hint - using null as ownerAccount means it goes to treasury
     const success = await payMovementFee(HINT_COST, null);
     if (!success) {
       toast.error("Failed to process hint payment.");
@@ -59,14 +59,13 @@ const MazePath: React.FC<MazePathProps> = ({
       setHintPaths([path]);
       toast.success("Hint path shown for 6 seconds");
       
-      // Clear hint paths after 6 seconds (increased from 3)
+      // Clear hint paths after 6 seconds
       setTimeout(() => {
         setHintPaths([]);
       }, 6000);
     } else {
       toast.error("Couldn't find a path to the exit.");
-      // Refund the player if no path found
-      // This would require additional logic in your WaxWallet context
+      // Refund would be needed here in a real application
     }
   };
 
