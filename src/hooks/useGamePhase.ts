@@ -12,7 +12,7 @@ export function useGamePhase(
   setIsVictoryModalOpen: (isOpen: boolean) => void
 ) {
   const [gamePhase, setGamePhase] = useState<GamePhase>('claim');
-  const [phaseTime, setPhaseTime] = useState(60); // 60 seconds for claim phase
+  const [phaseTime, setPhaseTime] = useState(20); // 20 seconds for claim phase (reduced from 60)
   const { gameState, resetPlotClaim } = useWaxWallet();
 
   // Game phase timer - continuously cycles through phases
@@ -29,7 +29,7 @@ export function useGamePhase(
       } else if (gamePhase === 'play') {
         // Cycle back to claim phase for a new round
         setGamePhase('claim');
-        setPhaseTime(60); // Reset to 60 seconds for claim phase
+        setPhaseTime(20); // Reset to 20 seconds for claim phase (reduced from 60)
         
         // Save high score
         const currentHighScore = parseInt(localStorage.getItem('pyrameme-high-score') || '0');
