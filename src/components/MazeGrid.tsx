@@ -7,6 +7,7 @@ import { useGridInitializer } from '@/hooks/useGridInitializer';
 import PlayerController from '@/components/game/PlayerController';
 import { useCellHandler } from '@/components/game/CellHandler';
 import MazePath from '@/components/game/MazePath';
+import { findPath } from '@/utils/mazeUtils';
 
 interface MazeGridProps {
   rows: number;
@@ -82,7 +83,7 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
 
     window.addEventListener('show-maze-hint', hintHandler);
     return () => window.removeEventListener('show-maze-hint', hintHandler);
-  }, [player, exitCell, maze, cols, rows]);
+  }, [player, exitCell, maze, cols, rows, setHintPaths]);
   
   // Reference to the movePlayer function from PlayerController
   const playerControllerMovePlayer = React.useRef<(col: number, row: number) => void>();
@@ -155,8 +156,5 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
     </div>
   );
 };
-
-// Import the utility used in the new effect
-import { findPath } from '@/utils/mazeUtils';
 
 export default MazeGrid;
