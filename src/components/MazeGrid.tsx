@@ -69,7 +69,9 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
   React.useEffect(() => {
     const hintHandler = () => {
       if (player && exitCell && maze.length > 0) {
+        console.log("Handling hint event - finding path");
         const path = findPath(player, exitCell, maze, cols, rows);
+        console.log("Path found:", path);
         if (path.length > 0) {
           setHintPaths([path]);
           

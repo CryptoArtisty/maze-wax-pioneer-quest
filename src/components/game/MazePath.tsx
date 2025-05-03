@@ -56,6 +56,7 @@ const MazePath: React.FC<MazePathProps> = ({
     const path = findPath(player, exitCell, maze, cols, rows);
     
     if (path.length > 0) {
+      console.log("MazePath - Setting hint path:", path);
       setHintPaths([path]);
       toast.success("Hint path shown for 6 seconds");
       

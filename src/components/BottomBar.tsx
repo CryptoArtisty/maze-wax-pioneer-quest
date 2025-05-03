@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { toast } from 'sonner';
@@ -29,6 +30,7 @@ const BottomBar: React.FC = () => {
     }
     
     // Create and dispatch a custom event to trigger the hint functionality
+    console.log("BottomBar - Dispatching show-maze-hint event");
     const hintEvent = new CustomEvent('show-maze-hint');
     window.dispatchEvent(hintEvent);
     

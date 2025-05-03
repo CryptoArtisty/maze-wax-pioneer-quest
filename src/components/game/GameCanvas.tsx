@@ -50,12 +50,12 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     
     // Draw maze elements if in play phase
     if (gamePhase === 'play') {
+      // Draw hint paths first (so they're underneath other elements)
+      if (hintPaths.length > 0) {
+        drawHintPaths(ctx);
+      }
+      
       drawMazeElements(ctx);
-    }
-    
-    // Draw hint paths
-    if (hintPaths.length > 0) {
-      drawHintPaths(ctx);
     }
   }
 
@@ -176,11 +176,61 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   function drawHintPaths(ctx: CanvasRenderingContext2D) {
     if (!hintPaths.length) return;
     
-    ctx.fillStyle = "rgba(0,255,255,0.3)"; // Hint path color
+    ctx.fillStyle = "rgba(0,255,255,0.4)"; // Hint path color (made more visible)
+    
     hintPaths.forEach(path => {
       path.forEach(([col, row]) => {
-        ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        // Draw a filled rectangle for each cell in the hint path
+        ctx.fillRect(
+          col * CELL_SIZE + CELL_SIZE * 0.1, 
+          row * CELL_SIZE + CELL_SIZE * 0.1, 
+          CELL_SIZE * 0.8, 
+          CELL_SIZE * 0.8
+        );
       });
+    });
+    
+    // Add arrow indicators along the path
+    hintPaths.forEach(path => {
+      if (path.length > 1) {
+        ctx.strokeStyle = "rgba(255,255,0,0.7)";
+        ctx.lineWidth = 2;
+        
+        for (let i = 0; i < path.length - 1; i++) {
+          const [x1, y1] = path[i];
+          const [x2, y2] = path[i + 1];
+          
+          // Draw arrow from current cell to next cell
+          const startX = x1 * CELL_SIZE + CELL_SIZE / 2;
+          const startY = y1 * CELL_SIZE + CELL_SIZE / 2;
+          const endX = x2 * CELL_SIZE + CELL_SIZE / 2;
+          const endY = y2 * CELL_SIZE + CELL_SIZE / 2;
+          
+          // Draw line
+          ctx.beginPath();
+          ctx.moveTo(startX, startY);
+          ctx.lineTo(endX, endY);
+          ctx.stroke();
+          
+          // Draw arrowhead
+          const angle = Math.atan2(endY - startY, endX - startX);
+          const arrowSize = CELL_SIZE / 5;
+          
+          ctx.beginPath();
+          ctx.moveTo(endX, endY);
+          ctx.lineTo(
+            endX - arrowSize * Math.cos(angle - Math.PI / 6),
+            endY - arrowSize * Math.sin(angle - Math.PI / 6)
+          );
+          ctx.lineTo(
+            endX - arrowSize * Math.cos(angle + Math.PI / 6),
+            endY - arrowSize * Math.sin(angle + Math.PI / 6)
+          );
+          ctx.closePath();
+          ctx.fillStyle = "rgba(255,255,0,0.7)";
+          ctx.fill();
+        }
+      }
     });
   }
 
