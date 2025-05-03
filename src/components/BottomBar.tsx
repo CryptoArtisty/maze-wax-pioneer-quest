@@ -8,7 +8,7 @@ const BottomBar: React.FC = () => {
   const { gameState } = useWaxWallet();
   
   const handleHint = () => {
-    const HINT_COST = 10;
+    const HINT_COST = 500; // Updated from 10 to 500
     
     // Check if user is authenticated
     if (!gameState.isAuthenticated) {
@@ -24,8 +24,7 @@ const BottomBar: React.FC = () => {
     
     toast(`Used ${HINT_COST} WAXP for hint`);
     
-    // Actual hint logic would happen in the MazeGrid component
-    // This is just the UI button
+    // Actual hint logic is now in the MazePath component
   };
   
   const handleShare = async () => {
@@ -54,7 +53,7 @@ const BottomBar: React.FC = () => {
           onClick={handleHint}
           className="w-full py-6 bg-hieroglyphic-brown border-2 border-gold text-gold hover:bg-hieroglyphic-brown/80"
         >
-          Hint (10 WAXP)
+          Hint (500 Gold)
         </Button>
         
         <Button 

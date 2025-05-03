@@ -119,7 +119,16 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
                 "No position set"
               }
             </p>
-            <MazePath setHintPaths={setHintPaths} />
+            {player && (
+              <MazePath 
+                setHintPaths={setHintPaths} 
+                player={player}
+                exitCell={exitCell}
+                maze={maze}
+                rows={rows}
+                cols={cols}
+              />
+            )}
           </div>
         )}
       </div>

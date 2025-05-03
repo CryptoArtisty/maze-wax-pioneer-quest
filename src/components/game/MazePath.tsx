@@ -1,21 +1,73 @@
 
 import React from 'react';
 import { toast } from 'sonner';
+import { useWaxWallet } from '@/contexts/WaxWalletContext';
+import { findPath } from '@/utils/mazeUtils';
+import { MazeCell, PlayerPosition, ExitCell } from '@/types/gameTypes';
 
 interface MazePathProps {
   setHintPaths: (paths: Array<Array<[number, number]>>) => void;
+  player: PlayerPosition | null;
+  exitCell: ExitCell | null;
+  maze: MazeCell[];
+  cols: number;
+  rows: number;
 }
 
-const MazePath: React.FC<MazePathProps> = ({ setHintPaths }) => {
+const MazePath: React.FC<MazePathProps> = ({ 
+  setHintPaths, 
+  player, 
+  exitCell, 
+  maze,
+  cols,
+  rows
+}) => {
+  const { gameState, payMovementFee } = useWaxWallet();
+  const HINT_COST = 500; // 500 gold
+
   // Show hint paths for a few seconds
-  const showHint = () => {
-    // Implement pathfinding logic here
-    toast("Hint shown for 3 seconds");
+  const showHint = async () => {
+    // Check if player is authenticated
+    if (!gameState.isAuthenticated) {
+      toast("Please connect your wallet first");
+      return;
+    }
     
-    // Clear hint paths after 3 seconds
-    setTimeout(() => {
-      setHintPaths([]);
-    }, 3000);
+    // Check if user has enough gold balance
+    if (gameState.goldBalance < HINT_COST) {
+      toast.error(`Not enough gold! Need ${HINT_COST} gold for a hint.`);
+      return;
+    }
+
+    // Check if we have required data
+    if (!player || !exitCell || maze.length === 0) {
+      toast.error("Cannot show hint at this time.");
+      return;
+    }
+
+    // Pay for hint - always goes to treasury (null owner)
+    const success = await payMovementFee(HINT_COST, null);
+    if (!success) {
+      toast.error("Failed to process hint payment.");
+      return;
+    }
+
+    // Find path from player to exit
+    const path = findPath(player, exitCell, maze, cols, rows);
+    
+    if (path.length > 0) {
+      setHintPaths([path]);
+      toast.success("Hint path shown for 6 seconds");
+      
+      // Clear hint paths after 6 seconds (increased from 3)
+      setTimeout(() => {
+        setHintPaths([]);
+      }, 6000);
+    } else {
+      toast.error("Couldn't find a path to the exit.");
+      // Refund the player if no path found
+      // This would require additional logic in your WaxWallet context
+    }
   };
 
   return (

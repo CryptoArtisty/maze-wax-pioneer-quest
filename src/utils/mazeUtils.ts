@@ -1,5 +1,4 @@
-
-import { MazeCell, ExitCell, Treasure } from '@/types/gameTypes';
+import { MazeCell, ExitCell, Treasure, PlayerPosition } from '@/types/gameTypes';
 
 export function generateMaze(maze: MazeCell[], rows: number, cols: number): void {
   const stack: MazeCell[] = [];
@@ -137,4 +136,115 @@ export function canMoveTo(player: { col: number, row: number }, targetCol: numbe
   if (dy === -1 && currentCell.walls.top) return false;
   
   return true;
+}
+
+// New pathfinding function to find path from player to exit
+export function findPath(
+  player: PlayerPosition, 
+  exitCell: ExitCell, 
+  maze: MazeCell[], 
+  cols: number, 
+  rows: number
+): Array<[number, number]> {
+  // Create grid for pathfinding
+  const grid: any[][] = [];
+  for (let i = 0; i < rows; i++) {
+    grid[i] = [];
+    for (let j = 0; j < cols; j++) {
+      grid[i][j] = {
+        x: j,
+        y: i,
+        g: 0,
+        h: 0,
+        f: 0,
+        visited: false,
+        closed: false,
+        parent: null
+      };
+    }
+  }
+
+  // Start and end points
+  const start = grid[player.row][player.col];
+  const end = grid[exitCell.row][exitCell.col];
+  
+  // Open nodes to examine (priority queue)
+  const openNodes = [start];
+  
+  // Process nodes until path found or no path exists
+  while (openNodes.length > 0) {
+    // Find node with lowest f score
+    let currentIndex = 0;
+    for (let i = 0; i < openNodes.length; i++) {
+      if (openNodes[i].f < openNodes[currentIndex].f) {
+        currentIndex = i;
+      }
+    }
+    
+    // Get current node
+    const currentNode = openNodes[currentIndex];
+    
+    // Check if we reached the end
+    if (currentNode.x === end.x && currentNode.y === end.y) {
+      // Trace path back to start
+      const path: Array<[number, number]> = [];
+      let current = currentNode;
+      while (current.parent) {
+        path.push([current.x, current.y]);
+        current = current.parent;
+      }
+      // Return the path reversed (from start to end)
+      return path.reverse();
+    }
+    
+    // Move current node from open to closed
+    openNodes.splice(currentIndex, 1);
+    currentNode.closed = true;
+    
+    // Check all neighbors
+    const neighbors = [];
+    const directions = [
+      { x: 0, y: -1 },  // top
+      { x: 1, y: 0 },   // right
+      { x: 0, y: 1 },   // bottom
+      { x: -1, y: 0 }   // left
+    ];
+    
+    for (const dir of directions) {
+      const x = currentNode.x + dir.x;
+      const y = currentNode.y + dir.y;
+      
+      // Skip if out of bounds
+      if (x < 0 || y < 0 || x >= cols || y >= rows) continue;
+      
+      // Check walls using canMoveTo
+      if (!canMoveTo({col: currentNode.x, row: currentNode.y}, x, y, maze, cols, rows)) {
+        continue;
+      }
+      
+      const neighbor = grid[y][x];
+      
+      // Skip if closed
+      if (neighbor.closed) continue;
+      
+      // Calculate g score (distance from start)
+      const gScore = currentNode.g + 1;
+      
+      // If not in open set or better path found
+      if (!neighbor.visited || gScore < neighbor.g) {
+        neighbor.visited = true;
+        neighbor.parent = currentNode;
+        neighbor.g = gScore;
+        neighbor.h = Math.abs(neighbor.x - end.x) + Math.abs(neighbor.y - end.y); // Manhattan distance
+        neighbor.f = neighbor.g + neighbor.h;
+        
+        if (!neighbor.visited) {
+          openNodes.push(neighbor);
+        }
+      }
+    }
+  }
+  
+  // No path found
+  return [];
 }
