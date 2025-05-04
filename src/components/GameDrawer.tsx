@@ -17,14 +17,6 @@ const GameDrawer: React.FC<GameDrawerProps> = ({ isOpen, onClose }) => {
     toast.info("Tutorial:\n- Claim Phase: Click on a cell to claim it as your starting position.\n- Play Phase: Navigate the maze from your claimed cell. A parking fee is deducted when you step on others' cells.\n- Collect treasures and reach the exit to win.");
   };
   
-  const handleSubscribe = () => {
-    toast.info("Subscribe feature coming soon!");
-  };
-  
-  const handleContact = () => {
-    window.location.href = "mailto:contact@pyrameme.com?subject=Pyrameme Quest";
-  };
-  
   const handleManageFunds = () => {
     setShowManageFunds(!showManageFunds);
   };
@@ -59,20 +51,6 @@ const GameDrawer: React.FC<GameDrawerProps> = ({ isOpen, onClose }) => {
         className="w-full mb-2 bg-hieroglyphic-brown border-2 border-gold text-gold hover:bg-hieroglyphic-brown/80"
       >
         Tutorial
-      </Button>
-      
-      <Button 
-        onClick={handleSubscribe}
-        className="w-full mb-2 bg-hieroglyphic-brown border-2 border-gold text-gold hover:bg-hieroglyphic-brown/80"
-      >
-        Subscribe (Remove Ads)
-      </Button>
-      
-      <Button 
-        onClick={handleContact}
-        className="w-full mb-2 bg-hieroglyphic-brown border-2 border-gold text-gold hover:bg-hieroglyphic-brown/80"
-      >
-        Contact
       </Button>
       
       {gameState.isAuthenticated && (

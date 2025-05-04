@@ -51,12 +51,6 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNum
         <span id="roundNumber">Round: {roundNumber}</span>
       </div>
       
-      {gameState.balance && (
-        <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[120px] text-lg overflow-hidden text-ellipsis whitespace-nowrap">
-          <span id="wallet">Wallet: {gameState.balance.waxp} WAXP</span>
-        </div>
-      )}
-      
       <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[120px] text-lg overflow-hidden text-ellipsis whitespace-nowrap flex items-center gap-1">
         <Coins size={18} className="text-yellow-400" />
         <span id="goldBalance">Gold: {gameState.goldBalance}</span>
@@ -108,7 +102,7 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNum
       {gameState.lastFee > 0 && (
         <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-red-500 rounded-lg min-w-[120px] text-lg fee-indicator">
           <span id="lastTransaction" className="text-red-400">
-            -${gameState.lastFee} gold
+            -{gameState.lastFee} gold
           </span>
         </div>
       )}
@@ -117,7 +111,7 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNum
       {gameState.lastCollection > 0 && (
         <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-green-500 rounded-lg min-w-[120px] text-lg collection-indicator">
           <span id="lastCollection" className="text-green-400">
-            +${gameState.lastCollection} gold
+            +{gameState.lastCollection} gold
           </span>
         </div>
       )}
