@@ -1,7 +1,7 @@
 
 import { useCallback, useRef } from 'react';
 import { toast } from 'sonner';
-import { canMoveTo } from '@/utils/mazeUtils';
+import { canMoveTo } from '@/utils/playerMovement';
 import { MazeCell, GridCell, PlayerPosition, Treasure, ExitCell } from '@/types/gameTypes';
 import { GameState } from '@/types/waxTypes';
 

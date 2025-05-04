@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useWaxWallet } from '@/contexts/WaxWalletContext';
 import { GamePhase } from '@/types/gameTypes';
@@ -7,7 +6,7 @@ import { useGridInitializer } from '@/hooks/useGridInitializer';
 import PlayerController from '@/components/game/PlayerController';
 import { useCellHandler } from '@/components/game/CellHandler';
 import MazePath from '@/components/game/MazePath';
-import { findPath } from '@/utils/mazeUtils';
+import { findPath } from '@/utils/pathfinding';
 
 interface MazeGridProps {
   rows: number;

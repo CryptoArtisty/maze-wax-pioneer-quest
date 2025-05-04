@@ -2,7 +2,7 @@
 import React from 'react';
 import { toast } from 'sonner';
 import { useWaxWallet } from '@/contexts/WaxWalletContext';
-import { findPath } from '@/utils/mazeUtils';
+import { findPath } from '@/utils/pathfinding';
 import { MazeCell, PlayerPosition, ExitCell } from '@/types/gameTypes';
 
 interface MazePathProps {
