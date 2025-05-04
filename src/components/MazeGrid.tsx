@@ -69,17 +69,25 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
   React.useEffect(() => {
     const hintHandler = () => {
       if (player && exitCell && maze.length > 0) {
-        console.log("Handling hint event - finding path");
+        console.log(`Handling hint event - finding path from [${player.col},${player.row}] to [${exitCell.col},${exitCell.row}]`);
+        
         const path = findPath(player, exitCell, maze, cols, rows);
         console.log("Path found:", path);
-        if (path.length > 0) {
+        
+        if (path && path.length > 0) {
           setHintPaths([path]);
           
           // Clear hint paths after 6 seconds
           setTimeout(() => {
+            console.log("Clearing hint path after timeout");
             setHintPaths([]);
           }, 6000);
+        } else {
+          console.error("No path found between player and exit");
         }
+      } else {
+        console.error("Missing required data for hint path:", 
+          { playerExists: !!player, exitCellExists: !!exitCell, mazeLength: maze.length });
       }
     };
 

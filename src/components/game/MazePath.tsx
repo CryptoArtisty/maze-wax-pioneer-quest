@@ -53,6 +53,7 @@ const MazePath: React.FC<MazePathProps> = ({
     }
 
     // Find path from player to exit
+    console.log(`MazePath - Finding path from [${player.col},${player.row}] to [${exitCell.col},${exitCell.row}]`);
     const path = findPath(player, exitCell, maze, cols, rows);
     
     if (path.length > 0) {
@@ -62,6 +63,7 @@ const MazePath: React.FC<MazePathProps> = ({
       
       // Clear hint paths after 6 seconds
       setTimeout(() => {
+        console.log("Clearing hint path");
         setHintPaths([]);
       }, 6000);
     } else {
