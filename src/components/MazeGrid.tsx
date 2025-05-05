@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useWaxWallet } from '@/contexts/WaxWalletContext';
 import { GamePhase } from '@/types/gameTypes';
@@ -143,21 +144,22 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
           <p>Click on a plot to claim your starting position</p>
         ) : (
           <div className="flex flex-col items-center">
-            <p>
-              {player ? 
-                `Your position: [${player.col}, ${player.row}]` : 
-                "No position set"
-              }
-            </p>
-            {player && (
-              <MazePath 
-                setHintPaths={setHintPaths} 
-                player={player}
-                exitCell={exitCell}
-                maze={maze}
-                rows={rows}
-                cols={cols}
-              />
+            {!gameState.hasClaimedPlot ? (
+              <p className="text-red-500">You must claim a cell during the claim phase before you can play!</p>
+            ) : player ? (
+              <>
+                <p>Your position: [{player.col}, {player.row}]</p>
+                <MazePath 
+                  setHintPaths={setHintPaths} 
+                  player={player}
+                  exitCell={exitCell}
+                  maze={maze}
+                  rows={rows}
+                  cols={cols}
+                />
+              </>
+            ) : (
+              <p>No position set</p>
             )}
           </div>
         )}

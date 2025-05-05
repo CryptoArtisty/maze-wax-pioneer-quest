@@ -62,6 +62,12 @@ export const CellHandler: React.FC<CellHandlerProps> = ({
         toast.success(`You claimed plot (${cellCol}, ${cellRow})`);
       }
     } else if (gamePhase === 'play') {
+      // Check if the player has claimed a plot before allowing movement
+      if (!gameState.hasClaimedPlot) {
+        toast.error("You must claim a cell during the claim phase before you can play!");
+        return;
+      }
+      
       // Try to move player to clicked cell
       movePlayer(cellCol, cellRow);
     }
@@ -121,6 +127,12 @@ export const useCellHandler = (props: CellHandlerProps) => {
         toast.success(`You claimed plot (${cellCol}, ${cellRow})`);
       }
     } else if (gamePhase === 'play') {
+      // Check if the player has claimed a plot before allowing movement
+      if (!gameState.hasClaimedPlot) {
+        toast.error("You must claim a cell during the claim phase before you can play!");
+        return;
+      }
+      
       // Try to move player to clicked cell
       movePlayer(cellCol, cellRow);
     }

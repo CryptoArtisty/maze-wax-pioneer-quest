@@ -72,6 +72,12 @@ const PlayerController: React.FC<PlayerControllerProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (gamePhase !== 'play' || !player) return;
       
+      // Check if the player has claimed a plot before allowing movement
+      if (!gameState.hasClaimedPlot) {
+        toast.error("You must claim a cell during the claim phase before you can play!");
+        return;
+      }
+      
       let newCol = player.col;
       let newRow = player.row;
       
@@ -97,7 +103,7 @@ const PlayerController: React.FC<PlayerControllerProps> = ({
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [player, gamePhase, movePlayer]);
+  }, [player, gamePhase, movePlayer, gameState.hasClaimedPlot]);
 
   return null; // This is a controller component with no UI
 };
