@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useWaxWallet } from '@/contexts/WaxWalletContext';
 import { GamePhase } from '@/types/gameTypes';
@@ -73,7 +72,7 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNum
         }`}
       >
         <span id="phaseTimerStrip">
-          Phase: {gamePhase === 'claim' ? 'Claim' : 'Play'} ({phaseTime}s)
+          Status: {gamePhase === 'claim' ? 'Claim' : 'Play'} ({phaseTime}s)
         </span>
       </div>
       

@@ -33,7 +33,7 @@ export const initialGameState: GameState = {
   currentPosition: null,
   hasClaimedPlot: false,
   balance: null,
-  goldBalance: 10000, // Starting gold balance
+  goldBalance: 5000, // Changed from 10000 to 5000
   profitLoss: {
     profit: 0,
     loss: 0,
@@ -54,7 +54,7 @@ export function gameStateReducer(state: GameState, action: GameAction): GameStat
         balance: action.balance,
         currentPosition: null, // Reset when logging in
         hasClaimedPlot: false, // Reset when logging in
-        goldBalance: 10000, // Starting gold
+        goldBalance: 5000, // Changed from 10000 to 5000
         profitLoss: {
           profit: 0,
           loss: 0,
