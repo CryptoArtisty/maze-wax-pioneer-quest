@@ -29,5 +29,6 @@ export interface GameState {
   } | null;
   lastFee: number;
   lastCollection: number;
-  treasuryBalance: number; // New field to track treasury balance
+  treasuryBalance: number; // Treasury balance for calculating treasure values
+  reachedExit: boolean; // Track if player reached the exit
 }

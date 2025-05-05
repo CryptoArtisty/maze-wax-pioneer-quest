@@ -18,9 +18,11 @@ interface PlayerControllerProps {
   rows: number;
   cols: number;
   onScoreChange: (score: number) => void;
+  onReachExit?: (reached: boolean) => void;
   payPlotFee: (fee: number, owner: string | null) => Promise<boolean>;
   payMovementFee: (fee: number, owner: string | null) => Promise<boolean>;
   collectTreasure: (value: number) => Promise<boolean>;
+  playerReachedExit: (score: number) => void;
 }
 
 const PlayerController: React.FC<PlayerControllerProps> = ({
@@ -36,9 +38,11 @@ const PlayerController: React.FC<PlayerControllerProps> = ({
   rows,
   cols,
   onScoreChange,
+  onReachExit,
   payPlotFee,
   payMovementFee,
-  collectTreasure
+  collectTreasure,
+  playerReachedExit
 }) => {
   const [score, setScore] = React.useState(0);
 
@@ -59,7 +63,9 @@ const PlayerController: React.FC<PlayerControllerProps> = ({
     setScore,
     onScoreChange,
     rows,
-    cols
+    cols,
+    onReachExit,
+    playerReachedExit
   });
 
   // Update parent component when score changes

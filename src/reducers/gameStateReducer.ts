@@ -11,7 +11,9 @@ export enum GameActionType {
   BUY_GOLD = 'BUY_GOLD',
   CLEAR_FEE = 'CLEAR_FEE',
   CLEAR_COLLECTION = 'CLEAR_COLLECTION',
-  PAY_MOVEMENT_FEE = 'PAY_MOVEMENT_FEE', // New action type for movement fees
+  PAY_MOVEMENT_FEE = 'PAY_MOVEMENT_FEE',
+  COLLECT_DEVELOPER_REWARD = 'COLLECT_DEVELOPER_REWARD',
+  PLAYER_REACHED_EXIT = 'PLAYER_REACHED_EXIT',
 }
 
 export type GameAction =
@@ -24,7 +26,9 @@ export type GameAction =
   | { type: GameActionType.BUY_GOLD; waxAmount: number; goldAmount: number }
   | { type: GameActionType.CLEAR_FEE }
   | { type: GameActionType.CLEAR_COLLECTION }
-  | { type: GameActionType.PAY_MOVEMENT_FEE; fee: number; toTreasury: boolean }; // New action type
+  | { type: GameActionType.PAY_MOVEMENT_FEE; fee: number; toTreasury: boolean }
+  | { type: GameActionType.COLLECT_DEVELOPER_REWARD }
+  | { type: GameActionType.PLAYER_REACHED_EXIT; score: number };
 
 export const initialGameState: GameState = {
   userId: null,
@@ -33,14 +37,15 @@ export const initialGameState: GameState = {
   currentPosition: null,
   hasClaimedPlot: false,
   balance: null,
-  goldBalance: 5000, // Changed from 10000 to 5000
+  goldBalance: 5000, // Starting player balance
   profitLoss: {
     profit: 0,
     loss: 0,
   },
   lastFee: 0,
   lastCollection: 0,
-  treasuryBalance: 0, // Initialize treasury balance
+  treasuryBalance: 10000, // Initialize treasury with 10,000 gold
+  reachedExit: false,
 };
 
 export function gameStateReducer(state: GameState, action: GameAction): GameState {
@@ -54,14 +59,15 @@ export function gameStateReducer(state: GameState, action: GameAction): GameStat
         balance: action.balance,
         currentPosition: null, // Reset when logging in
         hasClaimedPlot: false, // Reset when logging in
-        goldBalance: 5000, // Changed from 10000 to 5000
+        goldBalance: 5000, // Starting player balance
         profitLoss: {
           profit: 0,
           loss: 0,
         },
         lastFee: 0,
         lastCollection: 0,
-        treasuryBalance: 0, // Reset treasury balance
+        treasuryBalance: 10000, // Initialize treasury with 10,000 gold
+        reachedExit: false,
       };
       
     case GameActionType.LOGOUT:
@@ -100,6 +106,7 @@ export function gameStateReducer(state: GameState, action: GameAction): GameStat
           ...state.profitLoss!,
           profit: state.profitLoss!.profit + action.value,
         },
+        treasuryBalance: state.treasuryBalance - action.value,
       };
       
     case GameActionType.RESET_PLOT_CLAIM:
@@ -107,6 +114,7 @@ export function gameStateReducer(state: GameState, action: GameAction): GameStat
         ...state,
         currentPosition: null,
         hasClaimedPlot: false,
+        reachedExit: false,
       };
       
     case GameActionType.BUY_GOLD:
@@ -143,6 +151,20 @@ export function gameStateReducer(state: GameState, action: GameAction): GameStat
           ...state.profitLoss!,
           loss: state.profitLoss!.loss + action.fee,
         },
+      };
+      
+    case GameActionType.COLLECT_DEVELOPER_REWARD:
+      // Developer collects 50% of the treasury balance
+      const developerReward = Math.floor(state.treasuryBalance * 0.5);
+      return {
+        ...state,
+        treasuryBalance: state.treasuryBalance - developerReward,
+      };
+      
+    case GameActionType.PLAYER_REACHED_EXIT:
+      return {
+        ...state,
+        reachedExit: true,
       };
       
     default:

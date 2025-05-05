@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { GameState, WalletType } from '@/types/waxTypes';
 import { toast } from 'sonner';
@@ -15,6 +16,8 @@ interface WaxWalletContextType {
   resetPlotClaim: () => void;
   buyGold: (waxAmount: number) => Promise<boolean>;
   payMovementFee: (fee: number, ownerAccount: string | null) => Promise<boolean>;
+  collectDeveloperReward: () => void;
+  playerReachedExit: (score: number) => void;
 }
 
 const WaxWalletContext = createContext<WaxWalletContextType | undefined>(undefined);
@@ -30,7 +33,9 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
     resetPlotClaim,
     buyGold,
     clearLastFee,
-    payMovementFee
+    payMovementFee,
+    collectDeveloperReward,
+    playerReachedExit
   } = useWaxWalletActions(dispatch);
 
   // Manage state persistence and side effects
@@ -156,7 +161,9 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
       collectTreasure,
       resetPlotClaim,
       buyGold: handleBuyGold,
-      payMovementFee: handlePayMovementFee
+      payMovementFee: handlePayMovementFee,
+      collectDeveloperReward,
+      playerReachedExit
     }}>
       {children}
     </WaxWalletContext.Provider>
