@@ -9,12 +9,11 @@ export function useGamePhase(
   roundNumber: number, 
   setRoundNumber: (num: number) => void,
   setScore: (score: number) => void,
-  setIsVictoryModalOpen: (isOpen: boolean) => void,
-  setReachedExit: (reached: boolean) => void
+  setIsVictoryModalOpen: (isOpen: boolean) => void
 ) {
   const [gamePhase, setGamePhase] = useState<GamePhase>('claim');
   const [phaseTime, setPhaseTime] = useState(20); // 20 seconds for claim phase (reduced from 60)
-  const { gameState, resetPlotClaim, collectDeveloperReward } = useWaxWallet();
+  const { gameState, resetPlotClaim } = useWaxWallet();
 
   // Game phase timer - continuously cycles through phases
   useEffect(() => {
@@ -30,7 +29,7 @@ export function useGamePhase(
       } else if (gamePhase === 'play') {
         // Cycle back to claim phase for a new round
         setGamePhase('claim');
-        setPhaseTime(20); // Reset to 20 seconds for claim phase
+        setPhaseTime(20); // Reset to 20 seconds for claim phase (reduced from 60)
         
         // Save high score
         const currentHighScore = parseInt(localStorage.getItem('pyrameme-high-score') || '0');
@@ -43,20 +42,14 @@ export function useGamePhase(
           setIsVictoryModalOpen(true);
         }
         
-        // Collect developer reward (50% of treasury)
-        collectDeveloperReward();
-        
         // Reset plot claim status for next round
         resetPlotClaim();
         
-        // Increment round number
+        // Increment round number - Fix: change to use value instead of callback
         setRoundNumber(roundNumber + 1);
         
         // Reset score for new round
         setScore(0);
-        
-        // Reset exit reached status
-        setReachedExit(false);
       }
       return;
     }
@@ -66,7 +59,7 @@ export function useGamePhase(
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [phaseTime, gamePhase, gameState.hasClaimedPlot, gameState.currentPosition, score, resetPlotClaim, setRoundNumber, setScore, setIsVictoryModalOpen, roundNumber, setReachedExit, collectDeveloperReward]);
+  }, [phaseTime, gamePhase, gameState.hasClaimedPlot, gameState.currentPosition, score, resetPlotClaim, setRoundNumber, setScore, setIsVictoryModalOpen, roundNumber]);
 
   return { gamePhase, phaseTime };
 }

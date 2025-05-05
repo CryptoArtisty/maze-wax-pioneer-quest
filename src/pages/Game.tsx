@@ -19,7 +19,6 @@ const Game: React.FC = () => {
   const [score, setScore] = useState(0);
   const [roundNumber, setRoundNumber] = useState(1);
   const [showBuyGoldModal, setShowBuyGoldModal] = useState(false);
-  const [reachedExit, setReachedExit] = useState(false);
   const { gameState } = useWaxWallet();
   const navigate = useNavigate();
   
@@ -28,8 +27,7 @@ const Game: React.FC = () => {
     roundNumber,
     setRoundNumber,
     setScore,
-    setIsVictoryModalOpen,
-    setReachedExit
+    setIsVictoryModalOpen
   );
 
   // Redirect to login if not authenticated
@@ -59,7 +57,6 @@ const Game: React.FC = () => {
       <GameContent 
         gamePhase={gamePhase}
         onScoreChange={setScore}
-        onReachExit={setReachedExit}
       />
       
       <BottomBar />
@@ -68,7 +65,6 @@ const Game: React.FC = () => {
         isOpen={isVictoryModalOpen}
         onClose={() => setIsVictoryModalOpen(false)}
         score={score}
-        reachedExit={reachedExit}
       />
       
       <BuyGoldModal

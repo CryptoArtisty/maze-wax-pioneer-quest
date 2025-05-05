@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { WalletType, WaxUser } from '@/types/waxTypes';
 import { waxService } from '@/services/waxService';
@@ -169,17 +168,6 @@ export function useWaxWalletActions(dispatch: React.Dispatch<GameAction>) {
   const clearLastFee = useCallback(() => {
     dispatch({ type: GameActionType.CLEAR_FEE });
   }, [dispatch]);
-  
-  const collectDeveloperReward = useCallback(() => {
-    dispatch({ type: GameActionType.COLLECT_DEVELOPER_REWARD });
-  }, [dispatch]);
-  
-  const playerReachedExit = useCallback((score: number) => {
-    dispatch({ 
-      type: GameActionType.PLAYER_REACHED_EXIT,
-      score 
-    });
-  }, [dispatch]);
 
   return {
     login,
@@ -190,8 +178,6 @@ export function useWaxWalletActions(dispatch: React.Dispatch<GameAction>) {
     collectTreasure,
     payMovementFee,
     resetPlotClaim,
-    clearLastFee,
-    collectDeveloperReward,
-    playerReachedExit
+    clearLastFee
   };
 }

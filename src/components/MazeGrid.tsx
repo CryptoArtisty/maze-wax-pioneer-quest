@@ -14,11 +14,10 @@ interface MazeGridProps {
   cols: number;
   gamePhase: GamePhase;
   onScoreChange: (score: number) => void;
-  onReachExit?: (reached: boolean) => void;
 }
 
-const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChange, onReachExit }) => {
-  const { gameState, claimPlot, payPlotFee, payMovementFee, collectTreasure, playerReachedExit } = useWaxWallet();
+const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChange }) => {
+  const { gameState, claimPlot, payPlotFee, payMovementFee, collectTreasure } = useWaxWallet();
 
   // Initialize grid state using our custom hook
   const {
@@ -121,11 +120,9 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
           rows={rows}
           cols={cols}
           onScoreChange={onScoreChange}
-          onReachExit={onReachExit}
           payPlotFee={payPlotFee}
           payMovementFee={payMovementFee}
           collectTreasure={collectTreasure}
-          playerReachedExit={playerReachedExit}
         />
       )}
 

@@ -2,8 +2,7 @@
 import { useState, useEffect } from 'react';
 import { GridCell, MazeCell, Treasure, ExitCell, PlayerPosition, GamePhase } from '@/types/gameTypes';
 import { GameState } from '@/types/waxTypes';
-import { initializeMaze } from '@/utils/mazeUtils';
-import { generateTreasures, chooseRandomEdgeCell } from '@/utils/gameElements';
+import { initializeMaze, generateTreasures, chooseRandomEdgeCell } from '@/utils/mazeUtils';
 
 interface UseGridInitializerProps {
   rows: number;
@@ -74,8 +73,7 @@ export function useGridInitializer({
       const newMaze = initializeMaze(rows, cols);
       setMaze(newMaze);
       
-      // Generate treasures based on treasury balance
-      const newTreasures = generateTreasures(rows, cols, gameState.treasuryBalance);
+      const newTreasures = generateTreasures(rows, cols);
       setTreasures(newTreasures);
       
       setPlayer({
@@ -85,7 +83,7 @@ export function useGridInitializer({
       
       setExitCell(chooseRandomEdgeCell(rows, cols));
     }
-  }, [gamePhase, gameState.currentPosition, gameState.treasuryBalance, rows, cols]);
+  }, [gamePhase, gameState.currentPosition, rows, cols]);
 
   return {
     gridCells,

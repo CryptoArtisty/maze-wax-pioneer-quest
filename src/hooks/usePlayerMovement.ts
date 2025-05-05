@@ -22,8 +22,6 @@ interface UsePlayerMovementProps {
   onScoreChange: (score: number) => void;
   rows: number;
   cols: number;
-  onReachExit?: (reached: boolean) => void;
-  playerReachedExit: (score: number) => void;
 }
 
 export function usePlayerMovement({
@@ -42,9 +40,7 @@ export function usePlayerMovement({
   setScore,
   onScoreChange,
   rows,
-  cols,
-  onReachExit,
-  playerReachedExit
+  cols
 }: UsePlayerMovementProps) {
   const checkForTreasure = useCallback((col: number, row: number) => {
     treasures.forEach((treasure, index) => {
@@ -105,9 +101,7 @@ export function usePlayerMovement({
           
           // Check if player reached exit
           if (exitCell && newCol === exitCell.col && newRow === exitCell.row) {
-            toast.success("🎉 Congratulations! You reached the exit!");
-            if (onReachExit) onReachExit(true);
-            playerReachedExit(score);
+            toast("You reached the exit! Game complete!");
           }
         }
       });
@@ -118,12 +112,10 @@ export function usePlayerMovement({
       
       // Check if player reached exit
       if (exitCell && newCol === exitCell.col && newRow === exitCell.row) {
-        toast.success("🎉 Congratulations! You reached the exit!");
-        if (onReachExit) onReachExit(true);
-        playerReachedExit(score);
+        toast("You reached the exit! Game complete!");
       }
     }
-  }, [player, maze, gridCells, gameState.userId, gameState.goldBalance, payMovementFee, setPlayer, checkForTreasure, exitCell, cols, rows, onReachExit, playerReachedExit, score]);
+  }, [player, maze, gridCells, gameState.userId, gameState.goldBalance, payMovementFee, setPlayer, checkForTreasure, exitCell, cols, rows]);
 
   return { movePlayer };
 }

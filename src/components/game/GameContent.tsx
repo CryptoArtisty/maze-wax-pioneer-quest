@@ -6,21 +6,16 @@ import { GamePhase } from '@/types/gameTypes';
 interface GameContentProps {
   gamePhase: GamePhase;
   onScoreChange: (score: number) => void;
-  onReachExit?: (reached: boolean) => void;
 }
 
-const GameContent: React.FC<GameContentProps> = ({ gamePhase, onScoreChange, onReachExit }) => {
-  const rows = 15;
-  const cols = 15;
-
+const GameContent: React.FC<GameContentProps> = ({ gamePhase, onScoreChange }) => {
   return (
-    <main className="container mx-auto mt-4 mb-24 px-2">
+    <main className="container mx-auto px-4 py-6">
       <MazeGrid 
-        rows={rows} 
-        cols={cols} 
-        gamePhase={gamePhase} 
+        rows={15} 
+        cols={15} 
+        gamePhase={gamePhase}
         onScoreChange={onScoreChange}
-        onReachExit={onReachExit}
       />
     </main>
   );
