@@ -101,10 +101,7 @@ export function usePlayerMovement({
           
           // Check if player reached exit
           if (exitCell && newCol === exitCell.col && newRow === exitCell.row) {
-            toast.success("Congratulations! You've found the exit!");
-            // Trigger victory modal
-            const event = new CustomEvent('player-reached-exit', { detail: { score } });
-            window.dispatchEvent(event);
+            toast("You reached the exit! Game complete!");
           }
         }
       });
@@ -115,13 +112,10 @@ export function usePlayerMovement({
       
       // Check if player reached exit
       if (exitCell && newCol === exitCell.col && newRow === exitCell.row) {
-        toast.success("Congratulations! You've found the exit!");
-        // Trigger victory modal
-        const event = new CustomEvent('player-reached-exit', { detail: { score } });
-        window.dispatchEvent(event);
+        toast("You reached the exit! Game complete!");
       }
     }
-  }, [player, maze, gridCells, gameState.userId, gameState.goldBalance, payMovementFee, setPlayer, checkForTreasure, exitCell, cols, rows, score]);
+  }, [player, maze, gridCells, gameState.userId, gameState.goldBalance, payMovementFee, setPlayer, checkForTreasure, exitCell, cols, rows]);
 
   return { movePlayer };
 }
