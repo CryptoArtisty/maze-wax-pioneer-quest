@@ -41,6 +41,7 @@ const PlayerController: React.FC<PlayerControllerProps> = ({
   collectTreasure
 }) => {
   const [score, setScore] = React.useState(0);
+  const [reachedExit, setReachedExit] = React.useState(false);
 
   // Setup player movement hook
   const { movePlayer } = usePlayerMovement({
@@ -59,13 +60,24 @@ const PlayerController: React.FC<PlayerControllerProps> = ({
     setScore,
     onScoreChange,
     rows,
-    cols
+    cols,
+    onReachExit: () => setReachedExit(true)
   });
 
   // Update parent component when score changes
   useEffect(() => {
     onScoreChange(score);
   }, [score, onScoreChange]);
+
+  // Handle reaching the exit
+  useEffect(() => {
+    if (reachedExit) {
+      // Show victory modal (this will be triggered from Game.tsx)
+      
+      // Reset the flag for future gameplay
+      setReachedExit(false);
+    }
+  }, [reachedExit]);
 
   // Handle keyboard movement
   useEffect(() => {

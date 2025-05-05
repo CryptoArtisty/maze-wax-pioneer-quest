@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { WalletType, WaxUser } from '@/types/waxTypes';
 import { waxService } from '@/services/waxService';
@@ -160,6 +161,14 @@ export function useWaxWalletActions(dispatch: React.Dispatch<GameAction>) {
     }
   }, [dispatch]);
 
+  const collectDeveloperFee = useCallback((amount: number): void => {
+    dispatch({
+      type: GameActionType.COLLECT_DEVELOPER_FEE,
+      amount
+    });
+    toast.info(`Developer collected ${amount} gold from the treasury`);
+  }, [dispatch]);
+
   const resetPlotClaim = useCallback(() => {
     dispatch({ type: GameActionType.RESET_PLOT_CLAIM });
     toast.info("All plots have been relinquished for the next round!");
@@ -177,6 +186,7 @@ export function useWaxWalletActions(dispatch: React.Dispatch<GameAction>) {
     payPlotFee,
     collectTreasure,
     payMovementFee,
+    collectDeveloperFee,
     resetPlotClaim,
     clearLastFee
   };

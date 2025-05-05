@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
-import { GridCell, MazeCell, Treasure, ExitCell, PlayerPosition, GamePhase } from '@/types/gameTypes';
+import { generateMaze } from '@/utils/mazeGenerator';
+import { generateTreasures, chooseRandomEdgeCell } from '@/utils/gameElements';
+import { MazeCell, GridCell, PlayerPosition, Treasure, ExitCell, GamePhase } from '@/types/gameTypes';
 import { GameState } from '@/types/waxTypes';
-import { initializeMaze, generateTreasures, chooseRandomEdgeCell } from '@/utils/mazeUtils';
 
 interface UseGridInitializerProps {
   rows: number;
@@ -11,79 +11,51 @@ interface UseGridInitializerProps {
   gameState: GameState;
 }
 
-interface GridState {
-  gridCells: GridCell[][];
-  maze: MazeCell[];
-  player: PlayerPosition | null;
-  treasures: Treasure[];
-  exitCell: ExitCell | null;
-  hintPaths: Array<Array<[number, number]>>;
-}
-
-export function useGridInitializer({
-  rows,
-  cols,
-  gamePhase,
-  gameState
-}: UseGridInitializerProps): GridState & {
-  setGridCells: (cells: GridCell[][]) => void;
-  setMaze: (maze: MazeCell[]) => void;
-  setPlayer: (player: PlayerPosition) => void;
-  setTreasures: (treasures: Treasure[]) => void;
-  setExitCell: (cell: ExitCell | null) => void;
-  setHintPaths: (paths: Array<Array<[number, number]>>) => void;
-} {
+export function useGridInitializer({ rows, cols, gamePhase, gameState }: UseGridInitializerProps) {
   const [gridCells, setGridCells] = useState<GridCell[][]>([]);
   const [maze, setMaze] = useState<MazeCell[]>([]);
   const [player, setPlayer] = useState<PlayerPosition | null>(null);
   const [treasures, setTreasures] = useState<Treasure[]>([]);
   const [exitCell, setExitCell] = useState<ExitCell | null>(null);
   const [hintPaths, setHintPaths] = useState<Array<Array<[number, number]>>>([]);
-  
-  // Initialize grid cells
-  useEffect(() => {
-    const newGridCells: GridCell[][] = [];
-    for (let r = 0; r < rows; r++) {
-      newGridCells[r] = [];
-      for (let c = 0; c < cols; c++) {
-        newGridCells[r][c] = { owner: null, nickname: "" };
-      }
-    }
-    setGridCells(newGridCells);
-  }, [rows, cols]);
 
-  // Reset grid cells at the start of a new claim phase
+  // Only regenerate grid when game phase changes to claim
   useEffect(() => {
     if (gamePhase === 'claim') {
-      // Clear all cell claims for a fresh round
-      const newGridCells: GridCell[][] = [];
-      for (let r = 0; r < rows; r++) {
-        newGridCells[r] = [];
-        for (let c = 0; c < cols; c++) {
-          newGridCells[r][c] = { owner: null, nickname: "" };
-        }
-      }
+      // Initialize grid
+      const newGridCells: GridCell[][] = Array(rows).fill(null)
+        .map(() => Array(cols).fill(null)
+          .map(() => ({ owner: null, nickname: '' })));
+      
       setGridCells(newGridCells);
-    }
-  }, [gamePhase, rows, cols]);
-
-  // Initialize maze when phase changes to play
-  useEffect(() => {
-    if (gamePhase === 'play' && gameState.currentPosition) {
-      const newMaze = initializeMaze(rows, cols);
+      setPlayer(null);
+      
+      // Generate new maze when phase changes to claim
+      const newMaze = generateMaze(cols, rows);
       setMaze(newMaze);
       
-      const newTreasures = generateTreasures(rows, cols);
+      // Generate treasures based on the treasury balance
+      const newTreasures = generateTreasures(rows, cols, gameState.treasuryBalance);
       setTreasures(newTreasures);
       
+      // Choose random exit cell
+      const newExitCell = chooseRandomEdgeCell(rows, cols);
+      setExitCell(newExitCell);
+      
+      // Reset hint paths
+      setHintPaths([]);
+    }
+  }, [gamePhase, rows, cols, gameState.treasuryBalance]);
+  
+  // Update player position when gameState.currentPosition changes
+  useEffect(() => {
+    if (gameState.currentPosition) {
       setPlayer({
         col: gameState.currentPosition.x,
         row: gameState.currentPosition.y
       });
-      
-      setExitCell(chooseRandomEdgeCell(rows, cols));
     }
-  }, [gamePhase, gameState.currentPosition, rows, cols]);
+  }, [gameState.currentPosition]);
 
   return {
     gridCells,
@@ -93,10 +65,8 @@ export function useGridInitializer({
     exitCell,
     hintPaths,
     setGridCells,
-    setMaze,
     setPlayer,
     setTreasures,
-    setExitCell,
     setHintPaths
   };
 }
