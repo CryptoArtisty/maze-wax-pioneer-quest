@@ -1,3 +1,4 @@
+
 import { GameState, WalletType, WaxBalance } from '@/types/waxTypes';
 
 export enum GameActionType {
@@ -11,7 +12,6 @@ export enum GameActionType {
   CLEAR_FEE = 'CLEAR_FEE',
   CLEAR_COLLECTION = 'CLEAR_COLLECTION',
   PAY_MOVEMENT_FEE = 'PAY_MOVEMENT_FEE', // New action type for movement fees
-  COLLECT_DEVELOPER_FEE = 'COLLECT_DEVELOPER_FEE', // New action for developer fee collection
 }
 
 export type GameAction =
@@ -24,8 +24,7 @@ export type GameAction =
   | { type: GameActionType.BUY_GOLD; waxAmount: number; goldAmount: number }
   | { type: GameActionType.CLEAR_FEE }
   | { type: GameActionType.CLEAR_COLLECTION }
-  | { type: GameActionType.PAY_MOVEMENT_FEE; fee: number; toTreasury: boolean }
-  | { type: GameActionType.COLLECT_DEVELOPER_FEE; amount: number }; // New action type
+  | { type: GameActionType.PAY_MOVEMENT_FEE; fee: number; toTreasury: boolean }; // New action type
 
 export const initialGameState: GameState = {
   userId: null,
@@ -41,7 +40,7 @@ export const initialGameState: GameState = {
   },
   lastFee: 0,
   lastCollection: 0,
-  treasuryBalance: 10000, // Initialize treasury balance with 10,000 gold
+  treasuryBalance: 0, // Initialize treasury balance
 };
 
 export function gameStateReducer(state: GameState, action: GameAction): GameState {
@@ -62,7 +61,7 @@ export function gameStateReducer(state: GameState, action: GameAction): GameStat
         },
         lastFee: 0,
         lastCollection: 0,
-        treasuryBalance: 10000, // Reset treasury balance to 10,000
+        treasuryBalance: 0, // Reset treasury balance
       };
       
     case GameActionType.LOGOUT:
@@ -144,12 +143,6 @@ export function gameStateReducer(state: GameState, action: GameAction): GameStat
           ...state.profitLoss!,
           loss: state.profitLoss!.loss + action.fee,
         },
-      };
-      
-    case GameActionType.COLLECT_DEVELOPER_FEE:
-      return {
-        ...state,
-        treasuryBalance: state.treasuryBalance - action.amount,
       };
       
     default:

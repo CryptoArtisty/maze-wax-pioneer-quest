@@ -15,7 +15,6 @@ interface WaxWalletContextType {
   resetPlotClaim: () => void;
   buyGold: (waxAmount: number) => Promise<boolean>;
   payMovementFee: (fee: number, ownerAccount: string | null) => Promise<boolean>;
-  collectDeveloperFee: (amount: number) => void;
 }
 
 const WaxWalletContext = createContext<WaxWalletContextType | undefined>(undefined);
@@ -31,8 +30,7 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
     resetPlotClaim,
     buyGold,
     clearLastFee,
-    payMovementFee,
-    collectDeveloperFee
+    payMovementFee
   } = useWaxWalletActions(dispatch);
 
   // Manage state persistence and side effects
@@ -158,8 +156,7 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
       collectTreasure,
       resetPlotClaim,
       buyGold: handleBuyGold,
-      payMovementFee: handlePayMovementFee,
-      collectDeveloperFee
+      payMovementFee: handlePayMovementFee
     }}>
       {children}
     </WaxWalletContext.Provider>

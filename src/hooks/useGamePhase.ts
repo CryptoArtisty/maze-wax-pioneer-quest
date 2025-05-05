@@ -13,7 +13,7 @@ export function useGamePhase(
 ) {
   const [gamePhase, setGamePhase] = useState<GamePhase>('claim');
   const [phaseTime, setPhaseTime] = useState(20); // 20 seconds for claim phase (reduced from 60)
-  const { gameState, resetPlotClaim, collectDeveloperFee } = useWaxWallet();
+  const { gameState, resetPlotClaim } = useWaxWallet();
 
   // Game phase timer - continuously cycles through phases
   useEffect(() => {
@@ -45,12 +45,6 @@ export function useGamePhase(
         // Reset plot claim status for next round
         resetPlotClaim();
         
-        // Collect developer fee (50% of treasury)
-        const developerFee = Math.floor(gameState.treasuryBalance / 2);
-        if (developerFee > 0) {
-          collectDeveloperFee(developerFee);
-        }
-        
         // Increment round number - Fix: change to use value instead of callback
         setRoundNumber(roundNumber + 1);
         
@@ -65,7 +59,7 @@ export function useGamePhase(
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [phaseTime, gamePhase, gameState.hasClaimedPlot, gameState.currentPosition, gameState.treasuryBalance, score, resetPlotClaim, collectDeveloperFee, setRoundNumber, setScore, setIsVictoryModalOpen, roundNumber]);
+  }, [phaseTime, gamePhase, gameState.hasClaimedPlot, gameState.currentPosition, score, resetPlotClaim, setRoundNumber, setScore, setIsVictoryModalOpen, roundNumber]);
 
   return { gamePhase, phaseTime };
 }
