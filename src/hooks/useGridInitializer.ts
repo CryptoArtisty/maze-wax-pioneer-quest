@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { generateMaze } from '@/utils/mazeGenerator';
 import { generateTreasures, chooseRandomEdgeCell } from '@/utils/gameElements';
