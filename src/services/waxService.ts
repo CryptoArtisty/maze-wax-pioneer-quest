@@ -89,9 +89,9 @@ class WaxWalletService {
       this.anchorSession = identity.session;
       
       const mockUser: WaxUser = {
-        account: identity.account,
+        account: identity.account.toString(),
         publicKey: identity.session.publicKey.toString(),
-        permission: identity.permission
+        permission: identity.permission || 'active' // Default to 'active' if permission is undefined
       };
       
       toast.success(`Successfully logged in as ${mockUser.account}`);
