@@ -16,10 +16,14 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
 
   const handleLoginWithWallet = async (walletType: WalletType) => {
-    const success = await login(walletType);
-    if (success) {
-      onClose();
-      navigate('/game');
+    try {
+      const success = await login(walletType);
+      if (success) {
+        onClose();
+        navigate('/game');
+      }
+    } catch (error) {
+      console.error("Login error:", error);
     }
   };
 
