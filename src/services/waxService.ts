@@ -1,3 +1,4 @@
+
 import * as waxjs from "@waxio/waxjs/dist";
 import AnchorLink from "anchor-link";
 import AnchorLinkBrowserTransport from "anchor-link-browser-transport";
@@ -17,6 +18,12 @@ class WaxWalletService {
   private initializeWallets(): void {
     // Initialize WAX Cloud Wallet
     try {
+      // Create a polyfill for the browser environment
+      if (typeof window !== 'undefined') {
+        // @ts-ignore
+        if (!window.global) window.global = window;
+      }
+      
       this.wax = new waxjs.WaxJS({
         rpcEndpoint: 'https://wax.greymass.com',
         tryAutoLogin: false
@@ -82,9 +89,9 @@ class WaxWalletService {
       this.anchorSession = identity.session;
       
       const mockUser: WaxUser = {
-        account: identity.actor.toString(),
-        publicKey: identity.session.auth.actor.toString(), // Not exact but used as placeholder
-        permission: identity.permission.toString()
+        account: identity.account,
+        publicKey: identity.session.publicKey.toString(),
+        permission: identity.permission
       };
       
       toast.success(`Successfully logged in as ${mockUser.account}`);
