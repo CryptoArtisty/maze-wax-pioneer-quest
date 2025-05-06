@@ -1,36 +1,63 @@
-
+import * as waxjs from "@waxio/waxjs/dist";
+import AnchorLink from "anchor-link";
+import AnchorLinkBrowserTransport from "anchor-link-browser-transport";
 import { WalletType, WaxUser, WaxBalance } from "@/types/waxTypes";
 import { toast } from "sonner";
 
 class WaxWalletService {
-  private wax: any = null;
-  private anchorWallet: any = null;
-  private developerWaxWallet: string = "wax_developer_wallet_address";
+  private wax: waxjs.WaxJS | null = null;
+  private anchorLink: AnchorLink | null = null;
+  private anchorSession: any = null;
+  private developerWaxWallet: string = "wax.galaxy1"; // Replace with your developer wallet address
   
   constructor() {
-    this.initializeScripts();
+    this.initializeWallets();
   }
 
-  private initializeScripts(): void {
-    // In a production app, we would dynamically load these scripts
-    // For demo purposes, we'll simulate the integration
-    console.log("Initializing WAX wallet service");
+  private initializeWallets(): void {
+    // Initialize WAX Cloud Wallet
+    try {
+      this.wax = new waxjs.WaxJS({
+        rpcEndpoint: 'https://wax.greymass.com',
+        tryAutoLogin: false
+      });
+      console.log("WAX Cloud Wallet service initialized");
+    } catch (error) {
+      console.error("Error initializing WAX Cloud Wallet:", error);
+    }
+
+    // Initialize Anchor Wallet
+    try {
+      const transport = new AnchorLinkBrowserTransport();
+      this.anchorLink = new AnchorLink({
+        chains: [{
+          chainId: '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4',
+          nodeUrl: 'https://wax.greymass.com'
+        }],
+        transport: transport
+      });
+      console.log("Anchor Wallet service initialized");
+    } catch (error) {
+      console.error("Error initializing Anchor Wallet:", error);
+    }
   }
 
   async loginWithCloudWallet(): Promise<WaxUser | null> {
     try {
-      // Simulate WAX Cloud Wallet login
-      console.log("Logging in with WAX Cloud Wallet...");
-      toast.info("Redirecting to WAX Cloud Wallet...");
+      if (!this.wax) {
+        throw new Error("WAX Cloud Wallet not initialized");
+      }
+
+      toast.info("Connecting to WAX Cloud Wallet...");
       
-      // In a real implementation, we would redirect to the WAX Cloud Wallet
-      // For demo purposes, we'll simulate a successful login after a short delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Attempt login with WAX Cloud Wallet
+      const userAccount = await this.wax.login();
+      const pubKeys = await this.wax.api.rpc.get_account(userAccount);
       
       const mockUser: WaxUser = {
-        account: "pyramidmaze1",
-        publicKey: "WAX8i2h5EuEGFuQbx2ZF7SCPZHqUuA97WLC8rRMw7pZFvDRVPbrvj",
-        permission: "active"
+        account: userAccount,
+        publicKey: pubKeys.permissions[0].required_auth.keys[0].key,
+        permission: 'active'
       };
       
       toast.success(`Successfully logged in as ${mockUser.account}`);
@@ -44,18 +71,20 @@ class WaxWalletService {
 
   async loginWithAnchorWallet(): Promise<WaxUser | null> {
     try {
-      // Simulate Anchor Wallet login
-      console.log("Logging in with Anchor Wallet...");
+      if (!this.anchorLink) {
+        throw new Error("Anchor Wallet not initialized");
+      }
+
       toast.info("Connecting to Anchor Wallet...");
       
-      // In a real implementation, we would connect to the Anchor Wallet
-      // For demo purposes, we'll simulate a successful login after a short delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Create identity request
+      const identity = await this.anchorLink.login('Pyrameme Quest');
+      this.anchorSession = identity.session;
       
       const mockUser: WaxUser = {
-        account: "pyramidmaze1",
-        publicKey: "WAX8i2h5EuEGFuQbx2ZF7SCPZHqUuA97WLC8rRMw7pZFvDRVPbrvj",
-        permission: "active"
+        account: identity.actor.toString(),
+        publicKey: identity.session.auth.actor.toString(), // Not exact but used as placeholder
+        permission: identity.permission.toString()
       };
       
       toast.success(`Successfully logged in as ${mockUser.account}`);
@@ -68,22 +97,52 @@ class WaxWalletService {
   }
 
   async logout(): Promise<void> {
-    // Simulate logout
-    console.log("Logging out...");
-    toast.info("Logging out...");
-    await new Promise(resolve => setTimeout(resolve, 500));
-    toast.success("Successfully logged out");
+    try {
+      toast.info("Logging out...");
+      
+      // Clear session data
+      this.anchorSession = null;
+      
+      // WAX Cloud Wallet doesn't have an explicit logout method, so we just clear our stored session
+      localStorage.removeItem('pyrameme-session');
+      
+      toast.success("Successfully logged out");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      toast.error("Failed to log out");
+    }
   }
 
   async getBalance(account: string): Promise<WaxBalance> {
-    // In a real implementation, we would fetch the actual balance from the WAX blockchain
-    console.log(`Fetching balance for account: ${account}`);
-    
-    // For demo purposes, return mock data
-    return {
-      waxp: "100.0000",
-      pgl: "25.0000"
-    };
+    try {
+      // Get balance from WAX blockchain
+      if (!this.wax && !this.anchorSession) {
+        throw new Error("No wallet session available");
+      }
+      
+      let api;
+      if (this.wax) {
+        api = this.wax.api;
+      } else if (this.anchorSession) {
+        api = this.anchorSession.api;
+      } else {
+        throw new Error("No API instance available");
+      }
+      
+      const balance = await api.rpc.get_currency_balance('eosio.token', account, 'WAX');
+      const pglBalance = await api.rpc.get_currency_balance('prospectorsг', account, 'PGL');
+      
+      return {
+        waxp: balance.length > 0 ? balance[0].split(' ')[0] : "0.0000",
+        pgl: pglBalance.length > 0 ? pglBalance[0].split(' ')[0] : "0.0000"
+      };
+    } catch (error) {
+      console.error("Failed to get balance:", error);
+      return {
+        waxp: "0.0000",
+        pgl: "0.0000"
+      };
+    }
   }
 
   async claimPlot(account: string, x: number, y: number): Promise<boolean> {
@@ -104,7 +163,6 @@ class WaxWalletService {
     }
   }
 
-  // New method for buying gold with WAXP
   async buyGold(account: string, waxAmount: number): Promise<boolean> {
     try {
       console.log(`Buying gold with ${waxAmount} WAXP for account ${account}`);
