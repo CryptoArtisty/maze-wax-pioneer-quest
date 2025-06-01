@@ -41,6 +41,7 @@
     "@radix-ui/react-tooltip": "^1.1.4",
     "@tanstack/react-query": "^5.56.2",
     "@waxio/waxjs": "^1.4.0",
+    "anchor-link": "^3.6.0",
     "anchor-link-browser-transport": "^3.5.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
