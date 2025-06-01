@@ -44,7 +44,7 @@ export class AnchorWalletService extends WalletServiceBase {
       const user: WaxUser = {
         account: identity.account.toString(),
         publicKey: identity.session.publicKey.toString(),
-        permission: identity.session.permission || 'active'
+        permission: 'active' // Default to 'active' since permission isn't available on LinkSession
       };
       
       toast.success(`Successfully logged in as ${user.account}`);
