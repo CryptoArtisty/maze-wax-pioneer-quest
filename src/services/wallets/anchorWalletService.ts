@@ -8,6 +8,7 @@ import { WalletServiceBase } from "./baseWalletService";
 export class AnchorWalletService extends WalletServiceBase {
   private anchorLink: AnchorLink | null = null;
   private anchorSession: any = null;
+  private isTestnet: boolean = true; // Set to false for mainnet
 
   constructor() {
     super();
@@ -17,16 +18,23 @@ export class AnchorWalletService extends WalletServiceBase {
   private initialize(): void {
     try {
       const transport = new AnchorLinkBrowserTransport();
+      
+      const chainConfig = this.isTestnet ? {
+        chainId: 'f16b1833c747c43682f4386fca9cbb327929334a762755ebec17f6f23c9b8a12',
+        nodeUrl: 'https://testnet.waxsweden.org'
+      } : {
+        chainId: '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4',
+        nodeUrl: 'https://wax.greymass.com'
+      };
+      
       this.anchorLink = new AnchorLink({
-        chains: [{
-          chainId: '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4',
-          nodeUrl: 'https://wax.greymass.com'
-        }],
+        chains: [chainConfig],
         transport: transport
       });
-      console.log("Anchor Wallet service initialized");
+      console.log(`Anchor Wallet service initialized (${this.isTestnet ? 'testnet' : 'mainnet'})`);
     } catch (error) {
       console.error("Error initializing Anchor Wallet:", error);
+      toast.error("Failed to initialize Anchor Wallet");
     }
   }
 
@@ -38,7 +46,14 @@ export class AnchorWalletService extends WalletServiceBase {
 
       toast.info("Connecting to Anchor Wallet...");
       
-      const identity = await this.anchorLink.login('Pyrameme Quest');
+      // Add timeout for login
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Login timeout")), 30000)
+      );
+      
+      const loginPromise = this.anchorLink.login('Pyrameme Quest');
+      const identity = await Promise.race([loginPromise, timeoutPromise]) as any;
+      
       this.anchorSession = identity.session;
       
       const user: WaxUser = {
@@ -49,9 +64,16 @@ export class AnchorWalletService extends WalletServiceBase {
       
       toast.success(`Successfully logged in as ${user.account}`);
       return user;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Anchor wallet login failed:", error);
-      toast.error("Failed to log in with Anchor Wallet");
+      
+      if (error.code === "E_CANCEL" || error.message?.includes("canceled")) {
+        toast.info("Login cancelled by user");
+      } else if (error.message?.includes("timeout")) {
+        toast.error("Login timeout - please try again");
+      } else {
+        toast.error("Failed to log in with Anchor Wallet. Please try again.");
+      }
       return null;
     }
   }
@@ -66,5 +88,11 @@ export class AnchorWalletService extends WalletServiceBase {
 
   clearSession(): void {
     this.anchorSession = null;
+  }
+
+  // Add method to switch between testnet and mainnet
+  setTestnet(isTestnet: boolean): void {
+    this.isTestnet = isTestnet;
+    this.initialize();
   }
 }

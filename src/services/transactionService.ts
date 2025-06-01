@@ -90,4 +90,9 @@ export class TransactionService {
   getDeveloperWalletAddress(): string {
     return this.developerWallet;
   }
+
+  // Add network configuration helper
+  static isMainnet(): boolean {
+    return process.env.NODE_ENV === 'production';
+  }
 }

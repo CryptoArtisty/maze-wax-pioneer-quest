@@ -6,6 +6,7 @@ import { WalletServiceBase } from "./baseWalletService";
 
 export class CloudWalletService extends WalletServiceBase {
   private wax: waxjs.WaxJS | null = null;
+  private isTestnet: boolean = true; // Set to false for mainnet
 
   constructor() {
     super();
@@ -20,13 +21,18 @@ export class CloudWalletService extends WalletServiceBase {
         if (!window.global) window.global = window;
       }
       
+      const rpcEndpoint = this.isTestnet 
+        ? 'https://testnet.waxsweden.org' 
+        : 'https://wax.greymass.com';
+      
       this.wax = new waxjs.WaxJS({
-        rpcEndpoint: 'https://wax.greymass.com',
+        rpcEndpoint,
         tryAutoLogin: false
       });
-      console.log("WAX Cloud Wallet service initialized");
+      console.log(`WAX Cloud Wallet service initialized (${this.isTestnet ? 'testnet' : 'mainnet'})`);
     } catch (error) {
       console.error("Error initializing WAX Cloud Wallet:", error);
+      toast.error("Failed to initialize WAX Cloud Wallet");
     }
   }
 
@@ -39,7 +45,14 @@ export class CloudWalletService extends WalletServiceBase {
       toast.info("Connecting to WAX Cloud Wallet...");
       
       const userAccount = await this.wax.login();
-      const pubKeys = await this.wax.api.rpc.get_account(userAccount);
+      
+      // Add timeout for network requests
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Network request timeout")), 10000)
+      );
+      
+      const pubKeysPromise = this.wax.api.rpc.get_account(userAccount);
+      const pubKeys = await Promise.race([pubKeysPromise, timeoutPromise]) as any;
       
       const user: WaxUser = {
         account: userAccount,
@@ -49,9 +62,16 @@ export class CloudWalletService extends WalletServiceBase {
       
       toast.success(`Successfully logged in as ${user.account}`);
       return user;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Cloud wallet login failed:", error);
-      toast.error("Failed to log in with WAX Cloud Wallet");
+      
+      if (error.message?.includes("user closed the window")) {
+        toast.info("Login cancelled by user");
+      } else if (error.message?.includes("timeout")) {
+        toast.error("Network timeout - please check your connection and try again");
+      } else {
+        toast.error("Failed to log in with WAX Cloud Wallet. Please try again.");
+      }
       return null;
     }
   }
@@ -62,5 +82,11 @@ export class CloudWalletService extends WalletServiceBase {
 
   getApi(): any {
     return this.wax?.api || null;
+  }
+
+  // Add method to switch between testnet and mainnet
+  setTestnet(isTestnet: boolean): void {
+    this.isTestnet = isTestnet;
+    this.initialize();
   }
 }

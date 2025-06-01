@@ -5,16 +5,31 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { WaxWalletProvider } from "./contexts/WaxWalletContext";
+import { NetworkStatus } from "./components/ui/network-status";
 import Index from "./pages/Index";
 import Game from "./pages/Game";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error) => {
+        // Don't retry on network errors
+        if (error instanceof Error && error.message.includes('fetch')) {
+          return false;
+        }
+        return failureCount < 3;
+      },
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <WaxWalletProvider>
       <TooltipProvider>
+        <NetworkStatus />
         <Toaster />
         <Sonner />
         <BrowserRouter>
