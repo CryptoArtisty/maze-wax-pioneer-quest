@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { GameState, WalletType } from '@/types/waxTypes';
 import { toast } from 'sonner';
@@ -44,7 +43,7 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
       type: 'LOGIN_SUCCESS',
       userId: 'demo-player',
       walletType: null,
-      balance: { waxp: '100.0000', cpu: '0', ram: '0', net: '0' }
+      balance: { waxp: '100.0000', pgl: '0.0000' }
     } as GameAction);
     toast.success("Demo mode activated! Enjoy exploring the game.");
   };
