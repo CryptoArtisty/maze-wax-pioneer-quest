@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { WalletType } from '@/types/waxTypes';
 import { useWaxWallet } from '@/contexts/WaxWalletContext';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Wallet } from 'lucide-react';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -51,11 +51,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             {isLoading === WalletType.CLOUD ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              <img 
-                src="https://www.mycloudwallet.com/images/wax-logo.svg" 
-                alt="WAX Cloud Wallet" 
-                className="w-6 h-6" 
-              />
+              <Wallet className="w-6 h-6" />
             )}
             <span className="text-lg font-medium">
               {isLoading === WalletType.CLOUD ? 'Connecting...' : 'WAX Cloud Wallet'}
@@ -70,11 +66,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             {isLoading === WalletType.ANCHOR ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              <img 
-                src="https://www.gpslot.app/assets/images/anchor-wallet.svg" 
-                alt="Anchor Wallet" 
-                className="w-6 h-6" 
-              />
+              <Wallet className="w-6 h-6" />
             )}
             <span className="text-lg font-medium">
               {isLoading === WalletType.ANCHOR ? 'Connecting...' : 'Anchor Wallet'}
