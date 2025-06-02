@@ -14,8 +14,14 @@ export interface TransactionStatus {
 export class TransactionStatusService {
   private transactions: Map<string, TransactionStatus> = new Map();
   private statusCheckers: Map<string, NodeJS.Timeout> = new Map();
+  private cleanupInterval: NodeJS.Timeout;
 
-  constructor(private api: any) {}
+  constructor(private api: any) {
+    // Set up automatic cleanup every 10 minutes
+    this.cleanupInterval = setInterval(() => {
+      this.clearOldTransactions();
+    }, 10 * 60 * 1000);
+  }
 
   addTransaction(id: string, action: string, data?: any): void {
     const transaction: TransactionStatus = {
@@ -67,7 +73,7 @@ export class TransactionStatusService {
       }
 
       // Try to fetch transaction status from blockchain
-      if (transaction.transactionId) {
+      if (transaction.transactionId && this.api) {
         try {
           const result = await this.api.rpc.get_transaction(transaction.transactionId);
           if (result) {
@@ -101,11 +107,30 @@ export class TransactionStatusService {
 
   clearOldTransactions(): void {
     const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
+    let cleanedCount = 0;
+    
     for (const [id, transaction] of this.transactions.entries()) {
       if (transaction.timestamp < oneDayAgo) {
         this.stopStatusCheck(id);
         this.transactions.delete(id);
+        cleanedCount++;
       }
+    }
+    
+    if (cleanedCount > 0) {
+      console.log(`Cleaned up ${cleanedCount} old transactions`);
+    }
+  }
+
+  destroy(): void {
+    // Clean up all intervals
+    for (const checker of this.statusCheckers.values()) {
+      clearInterval(checker);
+    }
+    this.statusCheckers.clear();
+    
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
     }
   }
 }

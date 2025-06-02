@@ -4,10 +4,11 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useWaxWallet } from '@/contexts/WaxWalletContext';
-import { LogOut, User, Wallet, History, Settings } from 'lucide-react';
+import { LogOut, User, Wallet, History, Settings, Network } from 'lucide-react';
 import ProfileDisplay from './ProfileDisplay';
 import TransactionHistory from './TransactionHistory';
 import { waxService } from '@/services/waxService';
+import { useSessionPersistence } from '@/hooks/useSessionPersistence';
 
 interface GameDrawerProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ interface GameDrawerProps {
 const GameDrawer: React.FC<GameDrawerProps> = ({ isOpen, onClose }) => {
   const { gameState, logout } = useWaxWallet();
   const [currentTab, setCurrentTab] = React.useState<'profile' | 'transactions' | 'settings'>('profile');
+  const { saveNetworkSetting } = useSessionPersistence();
 
   const handleLogout = async () => {
     await logout();
@@ -25,7 +27,10 @@ const GameDrawer: React.FC<GameDrawerProps> = ({ isOpen, onClose }) => {
 
   const switchNetwork = (network: 'testnet' | 'mainnet') => {
     waxService.setNetwork(network);
+    saveNetworkSetting(network);
   };
+
+  const currentNetwork = waxService.getCurrentNetwork();
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -79,26 +84,31 @@ const GameDrawer: React.FC<GameDrawerProps> = ({ isOpen, onClose }) => {
           {currentTab === 'settings' && (
             <div className="space-y-4">
               <div>
-                <h3 className="text-lg font-medium mb-2">Network Settings</h3>
-                <div className="flex gap-2">
+                <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
+                  <Network className="h-4 w-4" />
+                  Network Settings
+                </h3>
+                <div className="flex gap-2 mb-2">
                   <Button
-                    variant="outline"
+                    variant={currentNetwork?.isTestnet ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => switchNetwork('testnet')}
                   >
                     WAX Testnet
                   </Button>
                   <Button
-                    variant="outline"
+                    variant={!currentNetwork?.isTestnet ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => switchNetwork('mainnet')}
                   >
                     WAX Mainnet
                   </Button>
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Current: {waxService.getCurrentNetwork()?.isTestnet ? 'Testnet' : 'Mainnet'}
-                </p>
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p>Current: {currentNetwork?.isTestnet ? 'Testnet' : 'Mainnet'}</p>
+                  <p>Contract: {currentNetwork?.contractAccount}</p>
+                  <p>Chain ID: {currentNetwork?.chainId.substring(0, 16)}...</p>
+                </div>
               </div>
 
               <Separator />
@@ -108,7 +118,17 @@ const GameDrawer: React.FC<GameDrawerProps> = ({ isOpen, onClose }) => {
                 <p className="text-sm text-muted-foreground">
                   Pyrameme Quest Saga v1.0<br/>
                   Built on WAX blockchain<br/>
-                  Smart contract: {waxService.getCurrentNetwork()?.contractAccount}
+                  Smart contract: {currentNetwork?.contractAccount}
+                </p>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="text-lg font-medium mb-2">Developer Info</h3>
+                <p className="text-sm text-muted-foreground">
+                  Developer wallet: {waxService.getDeveloperWalletAddress()}<br/>
+                  Network health: Connected
                 </p>
               </div>
             </div>

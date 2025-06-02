@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { WaxWalletProvider } from "./contexts/WaxWalletContext";
 import { NetworkStatus } from "./components/ui/network-status";
+import { NetworkHealth } from "./components/ui/network-health";
+import { useSessionPersistence } from "./hooks/useSessionPersistence";
 import Index from "./pages/Index";
 import Game from "./pages/Game";
 import NotFound from "./pages/NotFound";
@@ -25,21 +27,32 @@ const queryClient = new QueryClient({
   },
 });
 
+const AppContent = () => {
+  useSessionPersistence();
+  
+  return (
+    <>
+      <NetworkStatus />
+      <NetworkHealth />
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/game" element={<Game />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <WaxWalletProvider>
       <TooltipProvider>
-        <NetworkStatus />
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/game" element={<Game />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <AppContent />
       </TooltipProvider>
     </WaxWalletProvider>
   </QueryClientProvider>
