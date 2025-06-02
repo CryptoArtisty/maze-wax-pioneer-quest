@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { WaxWalletProvider } from "./contexts/WaxWalletContext";
 import { NetworkStatus } from "./components/ui/network-status";
 import { NetworkHealth } from "./components/ui/network-health";
@@ -27,6 +27,19 @@ const queryClient = new QueryClient({
   },
 });
 
+const AppRouter = () => {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/game" element={<Game />} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  );
+};
+
 const AppContent = () => {
   useSessionPersistence();
   
@@ -36,25 +49,18 @@ const AppContent = () => {
       <NetworkHealth />
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/game" element={<Game />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AppRouter />
     </>
   );
 };
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <WaxWalletProvider>
-      <TooltipProvider>
+    <TooltipProvider>
+      <WaxWalletProvider>
         <AppContent />
-      </TooltipProvider>
-    </WaxWalletProvider>
+      </WaxWalletProvider>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 
