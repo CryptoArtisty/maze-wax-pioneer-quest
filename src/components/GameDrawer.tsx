@@ -1,8 +1,13 @@
 
-import React, { useState } from 'react';
-import { useWaxWallet } from '@/contexts/WaxWalletContext';
+import React from 'react';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { toast } from 'sonner';
+import { Separator } from "@/components/ui/separator";
+import { useWaxWallet } from '@/contexts/WaxWalletContext';
+import { LogOut, User, Wallet, History, Settings } from 'lucide-react';
+import ProfileDisplay from './ProfileDisplay';
+import TransactionHistory from './TransactionHistory';
+import { waxService } from '@/services/waxService';
 
 interface GameDrawerProps {
   isOpen: boolean;
@@ -11,111 +16,122 @@ interface GameDrawerProps {
 
 const GameDrawer: React.FC<GameDrawerProps> = ({ isOpen, onClose }) => {
   const { gameState, logout } = useWaxWallet();
-  const [showManageFunds, setShowManageFunds] = useState(false);
-  
-  const handleTutorial = () => {
-    toast.info("Tutorial:\n- Claim Phase: Click on a cell to claim it as your starting position.\n- Play Phase: Navigate the maze from your claimed cell. A parking fee is deducted when you step on others' cells.\n- Collect treasures and reach the exit to win.");
+  const [currentTab, setCurrentTab] = React.useState<'profile' | 'transactions' | 'settings'>('profile');
+
+  const handleLogout = async () => {
+    await logout();
+    onClose();
   };
-  
-  const handleManageFunds = () => {
-    setShowManageFunds(!showManageFunds);
+
+  const switchNetwork = (network: 'testnet' | 'mainnet') => {
+    waxService.setNetwork(network);
   };
-  
-  const handleLeaderboard = () => {
-    toast.info("Leaderboard feature coming soon!");
-  };
-  
-  const handleAchievements = () => {
-    toast.info("Achievements feature coming soon!");
-  };
-  
-  const handleWithdraw = () => {
-    toast.info("Withdrawal initiated. Please wait 72 hours.");
-  };
-  
+
   return (
-    <div 
-      className={`fixed left-0 top-0 w-[300px] h-full bg-bg-dark transform transition-transform duration-300 z-50 p-5 border-r-2 border-gold overflow-y-auto ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}
-    >
-      <Button 
-        onClick={onClose}
-        className="w-full mb-4 bg-hieroglyphic-brown border-2 border-gold text-gold hover:bg-hieroglyphic-brown/80"
-      >
-        X Close
-      </Button>
-      
-      <Button 
-        onClick={handleTutorial}
-        className="w-full mb-2 bg-hieroglyphic-brown border-2 border-gold text-gold hover:bg-hieroglyphic-brown/80"
-      >
-        Tutorial
-      </Button>
-      
-      {gameState.isAuthenticated && (
-        <>
-          <Button 
-            onClick={handleManageFunds}
-            className="w-full mb-2 bg-hieroglyphic-brown border-2 border-gold text-gold hover:bg-hieroglyphic-brown/80"
-          >
-            Manage Funds
-          </Button>
-          
-          <Button 
-            onClick={() => logout()}
-            className="w-full mb-2 bg-hieroglyphic-brown border-2 border-gold text-gold hover:bg-hieroglyphic-brown/80"
-          >
-            Disconnect Wallet
-          </Button>
-        </>
-      )}
-      
-      <Button 
-        onClick={handleLeaderboard}
-        className="w-full mb-2 bg-hieroglyphic-brown border-2 border-gold text-gold hover:bg-hieroglyphic-brown/80"
-      >
-        Leaderboard
-      </Button>
-      
-      <Button 
-        onClick={handleAchievements}
-        className="w-full mb-2 bg-hieroglyphic-brown border-2 border-gold text-gold hover:bg-hieroglyphic-brown/80"
-      >
-        Achievements
-      </Button>
-      
-      {showManageFunds && (
-        <div className="mt-4 p-4 border-2 border-gold rounded-lg">
-          <h3 className="text-xl font-bold mb-3">Wax Escrow Management</h3>
-          
-          <p className="mb-2">Developer Wallet: <span className="text-sm">wax_developer_wallet</span></p>
-          <p className="mb-4">Escrow Expires: <span>300 years</span></p>
-          
-          <div className="mb-4">
-            <h4 className="font-bold mb-2">Profit and Loss</h4>
-            <p>Total Profit: <span>0 WAXP</span></p>
-            <p>Total Loss: <span>0 WAXP</span></p>
-          </div>
-          
-          <div>
-            <p className="mb-2">Withdraw funds to your Wax wallet:</p>
-            <input 
-              type="text" 
-              placeholder="Your Wax Wallet"
-              className="w-full p-2 mb-2 bg-muted text-foreground rounded border border-gold"
-            />
-            <Button 
-              onClick={handleWithdraw}
-              className="w-full bg-hieroglyphic-brown border-2 border-gold text-gold hover:bg-hieroglyphic-brown/80"
+    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent side="left" className="w-[400px] sm:w-[540px]">
+        <SheetHeader>
+          <SheetTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Player Dashboard
+          </SheetTitle>
+          <SheetDescription>
+            Manage your account and view game statistics
+          </SheetDescription>
+        </SheetHeader>
+
+        <div className="mt-6">
+          {/* Tab Navigation */}
+          <div className="flex gap-2 mb-4">
+            <Button
+              variant={currentTab === 'profile' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setCurrentTab('profile')}
             >
-              Withdraw
+              <User className="h-4 w-4 mr-2" />
+              Profile
             </Button>
-            <p className="mt-4 text-sm">Note: 72-hour waiting period applies.</p>
+            <Button
+              variant={currentTab === 'transactions' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setCurrentTab('transactions')}
+            >
+              <History className="h-4 w-4 mr-2" />
+              Transactions
+            </Button>
+            <Button
+              variant={currentTab === 'settings' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setCurrentTab('settings')}
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </Button>
           </div>
+
+          <Separator className="mb-4" />
+
+          {/* Tab Content */}
+          {currentTab === 'profile' && <ProfileDisplay />}
+          
+          {currentTab === 'transactions' && <TransactionHistory />}
+          
+          {currentTab === 'settings' && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-medium mb-2">Network Settings</h3>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => switchNetwork('testnet')}
+                  >
+                    WAX Testnet
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => switchNetwork('mainnet')}
+                  >
+                    WAX Mainnet
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Current: {waxService.getCurrentNetwork()?.isTestnet ? 'Testnet' : 'Mainnet'}
+                </p>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="text-lg font-medium mb-2">Game Information</h3>
+                <p className="text-sm text-muted-foreground">
+                  Pyrameme Quest Saga v1.0<br/>
+                  Built on WAX blockchain<br/>
+                  Smart contract: {waxService.getCurrentNetwork()?.contractAccount}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <Separator className="my-6" />
+
+          {/* Account Actions */}
+          {gameState.isAuthenticated && (
+            <div className="space-y-2">
+              <Button 
+                onClick={handleLogout}
+                variant="destructive" 
+                className="w-full"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </Button>
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 

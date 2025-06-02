@@ -4,11 +4,13 @@ import { toast } from "sonner";
 import { CloudWalletService } from "./wallets/cloudWalletService";
 import { AnchorWalletService } from "./wallets/anchorWalletService";
 import { TransactionService } from "./transactionService";
+import { NetworkConfigService } from "./networkConfigService";
 
 class WaxWalletService {
   private cloudWallet: CloudWalletService;
   private anchorWallet: AnchorWalletService;
   private transactionService: TransactionService;
+  private networkConfig = NetworkConfigService.getInstance();
   private currentWallet: CloudWalletService | AnchorWalletService | null = null;
   
   constructor() {
@@ -21,6 +23,8 @@ class WaxWalletService {
     const user = await this.cloudWallet.login();
     if (user) {
       this.currentWallet = this.cloudWallet;
+      // Pass the API to transaction service for real transactions
+      this.transactionService.setApi(this.cloudWallet.getApi());
     }
     return user;
   }
@@ -29,6 +33,8 @@ class WaxWalletService {
     const user = await this.anchorWallet.login();
     if (user) {
       this.currentWallet = this.anchorWallet;
+      // Pass the API to transaction service for real transactions
+      this.transactionService.setApi(this.anchorWallet.getApi());
     }
     return user;
   }
@@ -40,6 +46,9 @@ class WaxWalletService {
       // Clear session data
       this.anchorWallet.clearSession();
       this.currentWallet = null;
+      
+      // Clear transaction service API
+      this.transactionService.setApi(null);
       
       // Clear local storage
       localStorage.removeItem('pyrameme-session');
@@ -84,6 +93,29 @@ class WaxWalletService {
   
   getDeveloperWalletAddress(): string {
     return this.transactionService.getDeveloperWalletAddress();
+  }
+
+  getTransactionHistory(): any[] {
+    return this.transactionService.getTransactionHistory();
+  }
+
+  // Network management methods
+  setNetwork(network: 'testnet' | 'mainnet'): void {
+    this.networkConfig.setNetwork(network);
+    
+    // Update wallet configurations
+    this.cloudWallet.setTestnet(network === 'testnet');
+    this.anchorWallet.setTestnet(network === 'testnet');
+    
+    toast.info(`Switched to ${network}`);
+  }
+
+  getCurrentNetwork(): any {
+    return this.networkConfig.getCurrentNetwork();
+  }
+
+  async checkNetworkHealth(): Promise<boolean> {
+    return this.networkConfig.checkNetworkHealth();
   }
 }
 
