@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { GameState, WalletType } from '@/types/waxTypes';
 import { toast } from 'sonner';
@@ -8,6 +9,7 @@ import { useGameStateManager } from '@/hooks/useGameStateManager';
 interface WaxWalletContextType {
   gameState: GameState;
   login: (walletType: WalletType) => Promise<boolean>;
+  loginDemo: () => void;
   logout: () => Promise<void>;
   claimPlot: (x: number, y: number) => Promise<boolean>;
   payPlotFee: (fee: number, ownerAccount: string | null) => Promise<boolean>;
@@ -35,6 +37,17 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   // Manage state persistence and side effects
   useGameStateManager(gameState, clearLastFee);
+
+  // Demo login function
+  const loginDemo = () => {
+    dispatch({
+      type: 'LOGIN_SUCCESS',
+      userId: 'demo-player',
+      walletType: null,
+      balance: { waxp: '100.0000', cpu: '0', ram: '0', net: '0' }
+    } as GameAction);
+    toast.success("Demo mode activated! Enjoy exploring the game.");
+  };
 
   // Check for existing session on mount
   useEffect(() => {
@@ -149,7 +162,8 @@ export const WaxWalletProvider: React.FC<{ children: ReactNode }> = ({ children 
   return (
     <WaxWalletContext.Provider value={{ 
       gameState, 
-      login, 
+      login,
+      loginDemo,
       logout, 
       claimPlot: handleClaimPlot,
       payPlotFee: handlePayPlotFee,
