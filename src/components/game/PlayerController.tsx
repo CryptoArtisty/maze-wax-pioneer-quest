@@ -105,6 +105,25 @@ const PlayerController: React.FC<PlayerControllerProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [player, gamePhase, movePlayer, gameState.hasClaimedPlot]);
 
+  // Handle touch/tap movement
+  useEffect(() => {
+    const handleTouchMove = (e: CustomEvent<{col: number, row: number}>) => {
+      if (gamePhase !== 'play' || !player) return;
+      
+      // Check if the player has claimed a plot before allowing movement
+      if (!gameState.hasClaimedPlot) {
+        toast.error("You must claim a cell during the claim phase before you can play!");
+        return;
+      }
+      
+      const { col, row } = e.detail;
+      movePlayer(col, row);
+    };
+    
+    window.addEventListener('player-touch-move', handleTouchMove as EventListener);
+    return () => window.removeEventListener('player-touch-move', handleTouchMove as EventListener);
+  }, [player, gamePhase, movePlayer, gameState.hasClaimedPlot]);
+
   return null; // This is a controller component with no UI
 };
 

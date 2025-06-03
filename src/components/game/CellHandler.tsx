@@ -68,8 +68,11 @@ export const CellHandler: React.FC<CellHandlerProps> = ({
         return;
       }
       
-      // Try to move player to clicked cell
-      movePlayer(cellCol, cellRow);
+      // Dispatch custom event for touch-based movement
+      const moveEvent = new CustomEvent('player-touch-move', {
+        detail: { col: cellCol, row: cellRow }
+      });
+      window.dispatchEvent(moveEvent);
     }
   };
 
@@ -133,8 +136,11 @@ export const useCellHandler = (props: CellHandlerProps) => {
         return;
       }
       
-      // Try to move player to clicked cell
-      movePlayer(cellCol, cellRow);
+      // Dispatch custom event for touch-based movement
+      const moveEvent = new CustomEvent('player-touch-move', {
+        detail: { col: cellCol, row: cellRow }
+      });
+      window.dispatchEvent(moveEvent);
     }
   };
 

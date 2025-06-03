@@ -40,7 +40,7 @@ const Game: React.FC = () => {
   const toggleDrawer = () => setIsDrawerOpen(!isDrawerOpen);
 
   return (
-    <div className="min-h-screen bg-bg-dark text-gold font-medieval">
+    <div className="min-h-screen bg-bg-dark text-gold font-medieval overflow-x-auto">
       <GameHeader onOpenDrawer={toggleDrawer} />
       
       <GameDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
@@ -58,6 +58,15 @@ const Game: React.FC = () => {
         gamePhase={gamePhase}
         onScoreChange={setScore}
       />
+      
+      {/* Mobile-friendly instructions */}
+      <div className="text-center text-sm text-gold/70 px-4 pb-4 md:hidden">
+        {gamePhase === 'claim' ? (
+          <p>📱 Tap a cell to claim your starting position</p>
+        ) : (
+          <p>📱 Tap adjacent cells to move your red token</p>
+        )}
+      </div>
       
       <BottomBar />
       

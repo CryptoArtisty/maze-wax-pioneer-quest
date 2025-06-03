@@ -44,6 +44,16 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     onCellClick
   });
 
+  // Handle touch events for mobile devices
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault(); // Prevent scrolling
+    const touch = e.touches[0];
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (touch.clientX - rect.left) * (e.currentTarget.width / rect.width);
+    const y = (touch.clientY - rect.top) * (e.currentTarget.height / rect.height);
+    onCellClick(x, y);
+  };
+
   // Update the canvas on any state change
   useEffect(() => {
     const ctx = drawGame();
@@ -78,7 +88,8 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       width={cols * CELL_SIZE}
       height={rows * CELL_SIZE}
       onClick={handleCanvasClick}
-      className="bg-gradient-to-b from-canvas-gradient-top to-canvas-gradient-bottom border-4 border-hieroglyphic-brown rounded-lg shadow-[0_0_30px_rgba(255,215,0,0.3)] max-w-full"
+      onTouchStart={handleTouchStart}
+      className="bg-gradient-to-b from-canvas-gradient-top to-canvas-gradient-bottom border-4 border-hieroglyphic-brown rounded-lg shadow-[0_0_30px_rgba(255,215,0,0.3)] max-w-full touch-none"
     />
   );
 };
