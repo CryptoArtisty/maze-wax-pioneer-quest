@@ -44,8 +44,8 @@ const Index = () => {
         </div>
         
         <div className="mt-8 text-sm text-gold/70">
-          <p>A blockchain maze game where players claim cells</p>
-          <p>and navigate through puzzles to collect treasures</p>
+          <p>A blockchain maze game where players claim Plots</p>
+          <p>and navigate through puzzles to collect crypto treasures</p>
         </div>
       </div>
       
