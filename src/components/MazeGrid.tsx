@@ -126,18 +126,21 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
         />
       )}
 
-      <GameCanvas 
-        rows={rows}
-        cols={cols}
-        gridCells={gridCells}
-        maze={maze}
-        player={player}
-        treasures={treasures}
-        exitCell={exitCell}
-        hintPaths={hintPaths}
-        gamePhase={gamePhase}
-        onCellClick={handleCellClick}
-      />
+      {/* Fixed container for the game canvas to prevent layout shifts */}
+      <div className="w-[600px] h-[600px] flex items-center justify-center">
+        <GameCanvas 
+          rows={rows}
+          cols={cols}
+          gridCells={gridCells}
+          maze={maze}
+          player={player}
+          treasures={treasures}
+          exitCell={exitCell}
+          hintPaths={hintPaths}
+          gamePhase={gamePhase}
+          onCellClick={handleCellClick}
+        />
+      </div>
       
       <div className="mt-4 text-center text-sm text-muted-foreground">
         {gamePhase === 'claim' ? (
@@ -148,7 +151,7 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
               <p className="text-red-500">You must claim a cell during the claim phase before you can play!</p>
             ) : player ? (
               <>
-                <p>Your position: [{player.col}, {player.row}]</p>
+                <p>Your claimed plot: [{player.col}, {player.row}]</p>
                 <MazePath 
                   setHintPaths={setHintPaths} 
                   player={player}
