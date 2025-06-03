@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { toast } from 'sonner';
 import { usePlayerMovement } from '@/hooks/usePlayerMovement';
@@ -66,6 +65,17 @@ const PlayerController: React.FC<PlayerControllerProps> = ({
   useEffect(() => {
     onScoreChange(score);
   }, [score, onScoreChange]);
+
+  // Listen for exit found event from player movement
+  useEffect(() => {
+    const handleExitFound = () => {
+      // Dispatch event to game phase hook
+      window.dispatchEvent(new CustomEvent('player-found-exit'));
+    };
+
+    window.addEventListener('player-reached-exit', handleExitFound);
+    return () => window.removeEventListener('player-reached-exit', handleExitFound);
+  }, []);
 
   // Handle keyboard movement
   useEffect(() => {

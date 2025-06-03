@@ -50,7 +50,7 @@ const VictoryModal: React.FC<VictoryModalProps> = ({ isOpen, onClose, score }) =
       <DialogContent className="bg-bg-dark border-2 border-gold text-gold">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center">
-            Congratulations! You've found the exit
+            🎉 Congratulations! You've found the exit! 🎉
           </DialogTitle>
           <div className="text-xl mt-4 text-center">
             Your score: {score}
@@ -62,7 +62,7 @@ const VictoryModal: React.FC<VictoryModalProps> = ({ isOpen, onClose, score }) =
             onClick={onClose} 
             className="w-full bg-hieroglyphic-brown border-2 border-gold text-gold hover:bg-hieroglyphic-brown/80"
           >
-            Close
+            Continue Playing
           </Button>
         </DialogFooter>
       </DialogContent>
