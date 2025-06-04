@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useWaxWallet } from '@/contexts/WaxWalletContext';
 import { GamePhase } from '@/types/gameTypes';
@@ -46,10 +47,6 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNum
         <span id="highScore">𓀙 High Score: {highScore}</span>
       </div>
       
-      <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[120px] text-lg">
-        <span id="roundNumber">Round: {roundNumber}</span>
-      </div>
-      
       <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[120px] text-lg overflow-hidden text-ellipsis whitespace-nowrap flex items-center gap-1">
         <Coins size={18} className="text-yellow-400" />
         <span id="goldBalance">Gold: {gameState.goldBalance}</span>
@@ -83,12 +80,6 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNum
           </span>
         </div>
       )}
-      
-      <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[150px] text-lg">
-        <span id="roundInfo">
-          {gameState.hasClaimedPlot ? "Plot claimed" : "No plot claimed yet"}
-        </span>
-      </div>
       
       {/* Treasury balance */}
       <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[150px] text-lg">

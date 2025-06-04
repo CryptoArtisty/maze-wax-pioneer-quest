@@ -26,6 +26,17 @@ export function useGamePhase(
     return () => window.removeEventListener('player-found-exit', handleExitFound);
   }, []);
 
+  // Show toast message for plot claim status when phase changes
+  useEffect(() => {
+    if (gamePhase === 'play') {
+      if (gameState.hasClaimedPlot) {
+        toast.success("Plot claimed! You can now play this round.");
+      } else {
+        toast.warning("No plot claimed! You cannot participate in this round.");
+      }
+    }
+  }, [gamePhase, gameState.hasClaimedPlot]);
+
   // Game phase timer - continuously cycles through phases
   useEffect(() => {
     if (phaseTime <= 0) {
@@ -34,10 +45,6 @@ export function useGamePhase(
         setGamePhase('play');
         setPhaseTime(300); // 300 seconds for play phase
         setPlayerFoundExit(false); // Reset for new round
-        
-        if (!gameState.hasClaimedPlot) {
-          toast.warning("You haven't claimed a plot! Claim a plot to participate in the next round.");
-        }
       } else if (gamePhase === 'play') {
         // Cycle back to claim phase for a new round
         setGamePhase('claim');

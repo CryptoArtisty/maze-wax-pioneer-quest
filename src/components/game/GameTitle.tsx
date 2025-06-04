@@ -14,10 +14,9 @@ const GameTitle: React.FC<GameTitleProps> = ({ onOpenBuyGoldModal }) => {
       <Button 
         onClick={onOpenBuyGoldModal}
         size="sm"
-        className="mt-3 bg-[#4a3728] hover:bg-[#6a5748] border-gold text-gold w-28 flex-shrink-0"
+        className="mt-3 bg-[#4a3728] hover:bg-[#6a5748] border-gold text-gold h-8 px-2 flex-shrink-0"
       >
-        <Coins size={16} className="mr-1 text-yellow-400" />
-        Buy Gold
+        <Coins size={16} className="text-yellow-400" />
       </Button>
     </div>
   );
