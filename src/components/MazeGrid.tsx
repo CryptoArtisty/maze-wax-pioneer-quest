@@ -126,8 +126,8 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
         />
       )}
 
-      {/* Fixed container for the game canvas to prevent layout shifts */}
-      <div className="w-[600px] h-[600px] flex items-center justify-center">
+      {/* Responsive container for the game canvas */}
+      <div className="w-full max-w-[600px] aspect-square flex items-center justify-center px-2">
         <GameCanvas 
           rows={rows}
           cols={cols}
@@ -142,7 +142,7 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
         />
       </div>
       
-      <div className="mt-4 text-center text-sm text-muted-foreground">
+      <div className="mt-4 text-center text-sm text-muted-foreground px-4">
         {gamePhase === 'claim' ? (
           <p>Click on a plot to claim your starting position</p>
         ) : (

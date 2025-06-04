@@ -1,5 +1,5 @@
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { MazeCell, GridCell, Treasure, ExitCell, PlayerPosition } from '@/types/gameTypes';
 
 interface UseCanvasDrawingProps {
@@ -28,7 +28,31 @@ export const useCanvasDrawing = ({
   onCellClick
 }: UseCanvasDrawingProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const CELL_SIZE = 40; // Size of each cell in pixels
+  const [cellSize, setCellSize] = useState(40);
+
+  // Calculate responsive cell size based on screen width
+  useEffect(() => {
+    const calculateCellSize = () => {
+      const screenWidth = window.innerWidth;
+      const padding = 32; // Account for container padding
+      const availableWidth = screenWidth - padding;
+      
+      // Calculate cell size based on available width and number of columns
+      const maxCellSize = Math.floor(availableWidth / cols);
+      
+      // Set minimum and maximum cell sizes
+      const minCellSize = 20; // Minimum for touch interaction
+      const maxCellSize = 40; // Maximum for desktop
+      
+      const responsiveCellSize = Math.max(minCellSize, Math.min(maxCellSize, maxCellSize));
+      setCellSize(responsiveCellSize);
+    };
+
+    calculateCellSize();
+    window.addEventListener('resize', calculateCellSize);
+    
+    return () => window.removeEventListener('resize', calculateCellSize);
+  }, [cols]);
 
   // Draw the game on canvas
   const drawGame = () => {
@@ -57,6 +81,6 @@ export const useCanvasDrawing = ({
     canvasRef,
     drawGame,
     handleCanvasClick,
-    CELL_SIZE,
+    CELL_SIZE: cellSize,
   };
 };
