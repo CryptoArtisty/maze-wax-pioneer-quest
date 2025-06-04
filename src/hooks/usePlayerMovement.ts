@@ -109,7 +109,9 @@ export function usePlayerMovement({
           
           // Check if player reached exit
           if (exitCell && newCol === exitCell.col && newRow === exitCell.row) {
-            toast("You reached the exit! Game complete!");
+            // Dispatch event for confetti and victory
+            window.dispatchEvent(new CustomEvent('player-found-exit'));
+            toast("🎉 You reached the exit! Game complete!");
           }
         }
       });
@@ -120,7 +122,9 @@ export function usePlayerMovement({
       
       // Check if player reached exit
       if (exitCell && newCol === exitCell.col && newRow === exitCell.row) {
-        toast("You reached the exit! Game complete!");
+        // Dispatch event for confetti and victory
+        window.dispatchEvent(new CustomEvent('player-found-exit'));
+        toast("🎉 You reached the exit! Game complete!");
       }
     }
   }, [player, maze, gridCells, gameState.userId, gameState.goldBalance, payMovementFee, setPlayer, checkForTreasure, exitCell, cols, rows]);
