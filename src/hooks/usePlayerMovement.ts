@@ -42,6 +42,8 @@ export function usePlayerMovement({
   rows,
   cols
 }: UsePlayerMovementProps) {
+  const lastToastTime = useRef<number>(0);
+  
   const checkForTreasure = useCallback((col: number, row: number) => {
     treasures.forEach((treasure, index) => {
       if (!treasure.collected && treasure.col === col && treasure.row === row) {
@@ -67,8 +69,14 @@ export function usePlayerMovement({
       return;
     }
     
+    // Check if movement is valid (adjacent cell and not blocked by walls)
     if (!canMoveTo(player, newCol, newRow, maze, cols, rows)) {
-      toast("Blocked!");
+      // Throttle blocked messages to prevent spam
+      const now = Date.now();
+      if (now - lastToastTime.current > 1000) { // Only show once per second
+        toast("Can't move there!");
+        lastToastTime.current = now;
+      }
       return;
     }
     

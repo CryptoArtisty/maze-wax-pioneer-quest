@@ -8,6 +8,8 @@ import PlayerController from '@/components/game/PlayerController';
 import { useCellHandler } from '@/components/game/CellHandler';
 import MazePath from '@/components/game/MazePath';
 import { findPath } from '@/utils/pathfinding';
+import { Button } from "@/components/ui/button";
+import { toast } from 'sonner';
 
 interface MazeGridProps {
   rows: number;
@@ -65,7 +67,7 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
     return () => window.removeEventListener('maze-move-player', moveHandler as EventListener);
   }, []);
   
-  // Add event listener for hint button in BottomBar
+  // Add event listener for hint button
   React.useEffect(() => {
     const hintHandler = () => {
       if (player && exitCell && maze.length > 0) {
@@ -98,9 +100,53 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
   // Reference to the movePlayer function from PlayerController
   const playerControllerMovePlayer = React.useRef<(col: number, row: number) => void>();
   
-  // Capture the movePlayer function from PlayerMovement hook
-  const setMovePlayerRef = (movePlayerFn: (col: number, row: number) => void) => {
-    playerControllerMovePlayer.current = movePlayerFn;
+  const handleHint = async () => {
+    const HINT_COST = 500;
+    
+    // Check if user is authenticated
+    if (!gameState.isAuthenticated) {
+      toast("Please connect your wallet first");
+      return;
+    }
+    
+    // Check if user has enough gold balance
+    if (gameState.goldBalance < HINT_COST) {
+      toast.error(`Not enough gold! Need ${HINT_COST} gold for a hint.`);
+      return;
+    }
+    
+    // Pay for hint - send to treasury (null owner)
+    const success = await payMovementFee(HINT_COST, null);
+    if (!success) {
+      toast.error("Failed to process hint payment.");
+      return;
+    }
+    
+    // Create and dispatch a custom event to trigger the hint functionality
+    console.log("MazeGrid - Dispatching show-maze-hint event");
+    const hintEvent = new CustomEvent('show-maze-hint');
+    window.dispatchEvent(hintEvent);
+    
+    toast.success(`Used ${HINT_COST} gold for hint`);
+  };
+  
+  const handleShare = async () => {
+    const shareData = {
+      title: 'Pyrameme Quest Saga',
+      text: `I'm playing Pyrameme Quest Saga! Check it out!`,
+      url: window.location.href
+    };
+    
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareData.text + ' ' + shareData.url);
+        toast('Copied to clipboard!');
+      }
+    } catch (err) {
+      console.error('Error sharing:', err);
+    }
   };
 
   return (
@@ -126,8 +172,8 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
         />
       )}
 
-      {/* Responsive container for the game canvas */}
-      <div className="w-full max-w-[600px] aspect-square flex items-center justify-center px-2">
+      {/* Fixed container for the game canvas */}
+      <div className="w-full max-w-[min(95vw,600px)] aspect-square flex items-center justify-center px-2 mb-4">
         <GameCanvas 
           rows={rows}
           cols={cols}
@@ -140,6 +186,23 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
           gamePhase={gamePhase}
           onCellClick={handleCellClick}
         />
+      </div>
+      
+      {/* Action buttons below the grid */}
+      <div className="w-full max-w-md flex flex-col gap-2 px-4 mb-4">
+        <Button 
+          onClick={handleHint}
+          className="w-full py-4 bg-hieroglyphic-brown border-2 border-gold text-gold hover:bg-hieroglyphic-brown/80"
+        >
+          Hint (500 Gold)
+        </Button>
+        
+        <Button 
+          onClick={handleShare}
+          className="w-full py-4 bg-hieroglyphic-brown border-2 border-gold text-gold hover:bg-hieroglyphic-brown/80"
+        >
+          𓀣 Share Your Victory
+        </Button>
       </div>
       
       <div className="mt-4 text-center text-sm text-muted-foreground px-4">
