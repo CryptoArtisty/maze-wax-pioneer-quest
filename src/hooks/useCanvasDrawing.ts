@@ -38,13 +38,13 @@ export const useCanvasDrawing = ({
       const availableWidth = screenWidth - padding;
       
       // Calculate cell size based on available width and number of columns
-      const maxCellSize = Math.floor(availableWidth / cols);
+      const calculatedSize = Math.floor(availableWidth / cols);
       
       // Set minimum and maximum cell sizes
       const minCellSize = 20; // Minimum for touch interaction
       const maxCellSize = 40; // Maximum for desktop
       
-      const responsiveCellSize = Math.max(minCellSize, Math.min(maxCellSize, maxCellSize));
+      const responsiveCellSize = Math.max(minCellSize, Math.min(maxCellSize, calculatedSize));
       setCellSize(responsiveCellSize);
     };
 
