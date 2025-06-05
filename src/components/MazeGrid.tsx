@@ -35,6 +35,14 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
     setHintPaths
   } = useGridInitializer({ rows, cols, gamePhase, gameState });
 
+  // Reference to store the movePlayer function from PlayerController
+  const movePlayerRef = React.useRef<(col: number, row: number) => void>();
+
+  // Callback to receive movePlayer function from PlayerController
+  const handleMovePlayerRef = React.useCallback((movePlayerFn: (col: number, row: number) => void) => {
+    movePlayerRef.current = movePlayerFn;
+  }, []);
+
   // Use CellHandler to manage cell click interactions
   const { handleCellClick } = useCellHandler({
     gridCells,
@@ -43,29 +51,14 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
     gamePhase,
     claimPlot,
     movePlayer: (col, row) => {
-      if (gamePhase === 'play' && player) {
-        // This will be handled by the PlayerController which has the movePlayer function
-        const event = new CustomEvent('maze-move-player', { 
-          detail: { col, row } 
-        });
-        window.dispatchEvent(event);
+      if (gamePhase === 'play' && movePlayerRef.current) {
+        movePlayerRef.current(col, row);
       }
     },
     cols,
-    rows
+    rows,
+    cellSize: Math.max(20, Math.min(40, Math.floor((window.innerWidth - 32) / cols))) // Dynamic cell size calculation
   });
-
-  // Custom event handler for player movement
-  React.useEffect(() => {
-    const moveHandler = (e: CustomEvent) => {
-      if (playerControllerMovePlayer.current) {
-        playerControllerMovePlayer.current(e.detail.col, e.detail.row);
-      }
-    };
-
-    window.addEventListener('maze-move-player', moveHandler as EventListener);
-    return () => window.removeEventListener('maze-move-player', moveHandler as EventListener);
-  }, []);
   
   // Add event listener for hint button
   React.useEffect(() => {
@@ -96,9 +89,6 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
     window.addEventListener('show-maze-hint', hintHandler);
     return () => window.removeEventListener('show-maze-hint', hintHandler);
   }, [player, exitCell, maze, cols, rows, setHintPaths]);
-  
-  // Reference to the movePlayer function from PlayerController
-  const playerControllerMovePlayer = React.useRef<(col: number, row: number) => void>();
   
   const handleHint = async () => {
     const HINT_COST = 500;
@@ -169,6 +159,7 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
           payPlotFee={payPlotFee}
           payMovementFee={payMovementFee}
           collectTreasure={collectTreasure}
+          onMovePlayerRef={handleMovePlayerRef}
         />
       )}
 

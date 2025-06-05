@@ -13,6 +13,7 @@ interface CellHandlerProps {
   movePlayer: (x: number, y: number) => void;
   cols: number;
   rows: number;
+  cellSize: number; // Add cellSize prop to make calculations accurate
 }
 
 export const CellHandler: React.FC<CellHandlerProps> = ({
@@ -23,11 +24,12 @@ export const CellHandler: React.FC<CellHandlerProps> = ({
   claimPlot,
   movePlayer,
   cols,
-  rows
+  rows,
+  cellSize
 }) => {
   const handleCellClick = async (x: number, y: number) => {
-    const cellCol = Math.floor(x / 40); // CELL_SIZE = 40
-    const cellRow = Math.floor(y / 40);
+    const cellCol = Math.floor(x / cellSize);
+    const cellRow = Math.floor(y / cellSize);
     
     if (cellCol < 0 || cellRow < 0 || cellCol >= cols || cellRow >= rows) {
       return;
@@ -68,11 +70,8 @@ export const CellHandler: React.FC<CellHandlerProps> = ({
         return;
       }
       
-      // Dispatch custom event for touch-based movement
-      const moveEvent = new CustomEvent('player-touch-move', {
-        detail: { col: cellCol, row: cellRow }
-      });
-      window.dispatchEvent(moveEvent);
+      // Directly call movePlayer instead of dispatching events
+      movePlayer(cellCol, cellRow);
     }
   };
 
@@ -90,12 +89,13 @@ export const useCellHandler = (props: CellHandlerProps) => {
     claimPlot,
     movePlayer,
     cols,
-    rows
+    rows,
+    cellSize
   } = props;
   
   const handleCellClick = async (x: number, y: number) => {
-    const cellCol = Math.floor(x / 40); // CELL_SIZE = 40
-    const cellRow = Math.floor(y / 40);
+    const cellCol = Math.floor(x / cellSize);
+    const cellRow = Math.floor(y / cellSize);
     
     if (cellCol < 0 || cellRow < 0 || cellCol >= cols || cellRow >= rows) {
       return;
@@ -136,11 +136,8 @@ export const useCellHandler = (props: CellHandlerProps) => {
         return;
       }
       
-      // Dispatch custom event for touch-based movement
-      const moveEvent = new CustomEvent('player-touch-move', {
-        detail: { col: cellCol, row: cellRow }
-      });
-      window.dispatchEvent(moveEvent);
+      // Directly call movePlayer instead of dispatching events
+      movePlayer(cellCol, cellRow);
     }
   };
 

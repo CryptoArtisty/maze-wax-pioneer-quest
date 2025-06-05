@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { toast } from 'sonner';
 import { usePlayerMovement } from '@/hooks/usePlayerMovement';
@@ -20,6 +21,7 @@ interface PlayerControllerProps {
   payPlotFee: (fee: number, owner: string | null) => Promise<boolean>;
   payMovementFee: (fee: number, owner: string | null) => Promise<boolean>;
   collectTreasure: (value: number) => Promise<boolean>;
+  onMovePlayerRef: (movePlayerFn: (col: number, row: number) => void) => void;
 }
 
 const PlayerController: React.FC<PlayerControllerProps> = ({
@@ -37,7 +39,8 @@ const PlayerController: React.FC<PlayerControllerProps> = ({
   onScoreChange,
   payPlotFee,
   payMovementFee,
-  collectTreasure
+  collectTreasure,
+  onMovePlayerRef
 }) => {
   const [score, setScore] = React.useState(0);
 
@@ -61,21 +64,15 @@ const PlayerController: React.FC<PlayerControllerProps> = ({
     cols
   });
 
+  // Expose movePlayer function to parent component
+  useEffect(() => {
+    onMovePlayerRef(movePlayer);
+  }, [movePlayer, onMovePlayerRef]);
+
   // Update parent component when score changes
   useEffect(() => {
     onScoreChange(score);
   }, [score, onScoreChange]);
-
-  // Listen for exit found event from player movement
-  useEffect(() => {
-    const handleExitFound = () => {
-      // Dispatch event to game phase hook
-      window.dispatchEvent(new CustomEvent('player-found-exit'));
-    };
-
-    window.addEventListener('player-reached-exit', handleExitFound);
-    return () => window.removeEventListener('player-reached-exit', handleExitFound);
-  }, []);
 
   // Handle keyboard movement
   useEffect(() => {
@@ -113,25 +110,6 @@ const PlayerController: React.FC<PlayerControllerProps> = ({
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [player, gamePhase, movePlayer, gameState.hasClaimedPlot]);
-
-  // Handle touch/tap movement
-  useEffect(() => {
-    const handleTouchMove = (e: CustomEvent<{col: number, row: number}>) => {
-      if (gamePhase !== 'play' || !player) return;
-      
-      // Check if the player has claimed a plot before allowing movement
-      if (!gameState.hasClaimedPlot) {
-        toast.error("You must claim a cell during the claim phase before you can play!");
-        return;
-      }
-      
-      const { col, row } = e.detail;
-      movePlayer(col, row);
-    };
-    
-    window.addEventListener('player-touch-move', handleTouchMove as EventListener);
-    return () => window.removeEventListener('player-touch-move', handleTouchMove as EventListener);
   }, [player, gamePhase, movePlayer, gameState.hasClaimedPlot]);
 
   return null; // This is a controller component with no UI
