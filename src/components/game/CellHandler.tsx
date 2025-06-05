@@ -1,22 +1,24 @@
 
-import React from 'react';
-import { toast } from 'sonner';
-import { GamePhase, GridCell } from '@/types/gameTypes';
+import { useCallback } from 'react';
+import { GridCell } from '@/types/gameTypes';
 import { GameState } from '@/types/waxTypes';
+import { GamePhase } from '@/types/gameTypes';
+import { toast } from 'sonner';
+import { globalTimer } from '@/services/globalTimerService';
 
 interface CellHandlerProps {
   gridCells: GridCell[][];
   setGridCells: (cells: GridCell[][]) => void;
   gameState: GameState;
   gamePhase: GamePhase;
-  claimPlot: (x: number, y: number) => Promise<boolean>;
-  movePlayer: (x: number, y: number) => void;
+  claimPlot: (x: number, y: number, cost: number) => Promise<boolean>;
+  movePlayer: (col: number, row: number) => void;
   cols: number;
   rows: number;
-  cellSize: number; // Add cellSize prop to make calculations accurate
+  cellSize: number;
 }
 
-export const CellHandler: React.FC<CellHandlerProps> = ({
+export function useCellHandler({
   gridCells,
   setGridCells,
   gameState,
@@ -26,122 +28,80 @@ export const CellHandler: React.FC<CellHandlerProps> = ({
   cols,
   rows,
   cellSize
-}) => {
-  const handleCellClick = async (x: number, y: number) => {
-    const cellCol = Math.floor(x / cellSize);
-    const cellRow = Math.floor(y / cellSize);
+}: CellHandlerProps) {
+
+  const handleCellClick = useCallback(async (col: number, row: number) => {
+    console.log(`Cell clicked: [${col}, ${row}], Phase: ${gamePhase}`);
     
-    if (cellCol < 0 || cellRow < 0 || cellCol >= cols || cellRow >= rows) {
-      return;
-    }
+    // Check global game state to ensure we can actually join
+    const globalState = globalTimer.getCurrentGameState();
     
     if (gamePhase === 'claim') {
+      // Verify this is actually a claim phase globally
+      if (!globalState.canJoinNow) {
+        toast.error("Cannot claim plots during play phase. Wait for next round!");
+        return;
+      }
+      
+      // Check if user is authenticated
       if (!gameState.isAuthenticated) {
-        toast("Please login to claim a plot");
+        toast.error("Please connect your wallet to claim a plot!");
         return;
       }
-      
+
+      // Check if user has already claimed a plot this round
       if (gameState.hasClaimedPlot) {
-        toast("You've already claimed a plot this phase!");
+        toast.warning("You have already claimed a plot this round!");
         return;
       }
-      
-      // Check if plot is already claimed
-      if (gridCells[cellRow][cellCol].owner) {
-        toast(`Plot (${cellCol},${cellRow}) already claimed.`);
+
+      // Check if the cell is available (not claimed by anyone)
+      const targetCell = gridCells[row]?.[col];
+      if (!targetCell) {
+        console.error("Target cell not found");
         return;
       }
+
+      if (targetCell.owner) {
+        toast.error("This cell is already claimed by another player!");
+        return;
+      }
+
+      console.log(`Attempting to claim plot at [${col}, ${row}]`);
       
-      // Claim the plot
-      const success = await claimPlot(cellCol, cellRow);
+      // Attempt to claim the plot (free for now)
+      const success = await claimPlot(col, row, 0);
+      
       if (success) {
-        const newGridCells = [...gridCells];
-        newGridCells[cellRow][cellCol].owner = gameState.userId || null;
-        newGridCells[cellRow][cellCol].nickname = gameState.userId?.substring(0, 3) || "";
+        // Update the grid to show the claimed cell
+        const newGridCells = gridCells.map((rowCells, rowIndex) =>
+          rowCells.map((cell, colIndex) => {
+            if (rowIndex === row && colIndex === col) {
+              return {
+                ...cell,
+                owner: gameState.userId,
+                ownerNickname: gameState.userId?.split('.')[0] || 'Unknown'
+              };
+            }
+            return cell;
+          })
+        );
         setGridCells(newGridCells);
         
-        // Show the plot claimed message
-        toast.success(`You claimed plot (${cellCol}, ${cellRow})`);
+        toast.success(`Plot claimed at [${col}, ${row}]!`);
+      } else {
+        toast.error("Failed to claim plot. Please try again.");
       }
     } else if (gamePhase === 'play') {
-      // Check if the player has claimed a plot before allowing movement
+      // During play phase, clicking should move the player
       if (!gameState.hasClaimedPlot) {
         toast.error("You must claim a cell during the claim phase before you can play!");
         return;
       }
       
-      // Directly call movePlayer instead of dispatching events
-      movePlayer(cellCol, cellRow);
+      movePlayer(col, row);
     }
-  };
-
-  // Return null since this is a controller component without UI
-  return null;
-};
-
-// Export a hook version of the CellHandler for easier consumption
-export const useCellHandler = (props: CellHandlerProps) => {
-  const { 
-    gridCells,
-    setGridCells,
-    gameState,
-    gamePhase,
-    claimPlot,
-    movePlayer,
-    cols,
-    rows,
-    cellSize
-  } = props;
-  
-  const handleCellClick = async (x: number, y: number) => {
-    const cellCol = Math.floor(x / cellSize);
-    const cellRow = Math.floor(y / cellSize);
-    
-    if (cellCol < 0 || cellRow < 0 || cellCol >= cols || cellRow >= rows) {
-      return;
-    }
-    
-    if (gamePhase === 'claim') {
-      if (!gameState.isAuthenticated) {
-        toast("Please login to claim a plot");
-        return;
-      }
-      
-      if (gameState.hasClaimedPlot) {
-        toast("You've already claimed a plot this phase!");
-        return;
-      }
-      
-      // Check if plot is already claimed
-      if (gridCells[cellRow][cellCol].owner) {
-        toast(`Plot (${cellCol},${cellRow}) already claimed.`);
-        return;
-      }
-      
-      // Claim the plot
-      const success = await claimPlot(cellCol, cellRow);
-      if (success) {
-        const newGridCells = [...gridCells];
-        newGridCells[cellRow][cellCol].owner = gameState.userId || null;
-        newGridCells[cellRow][cellCol].nickname = gameState.userId?.substring(0, 3) || "";
-        setGridCells(newGridCells);
-        
-        // Show the plot claimed message
-        toast.success(`You claimed plot (${cellCol}, ${cellRow})`);
-      }
-    } else if (gamePhase === 'play') {
-      // Check if the player has claimed a plot before allowing movement
-      if (!gameState.hasClaimedPlot) {
-        toast.error("You must claim a cell during the claim phase before you can play!");
-        return;
-      }
-      
-      // Directly call movePlayer instead of dispatching events
-      movePlayer(cellCol, cellRow);
-    }
-  };
+  }, [gridCells, setGridCells, gameState, gamePhase, claimPlot, movePlayer, cols, rows, cellSize]);
 
   return { handleCellClick };
-};
-
-export default CellHandler;
+}

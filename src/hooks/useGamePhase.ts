@@ -1,7 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { GamePhase } from '@/types/gameTypes';
 import { useWaxWallet } from '@/contexts/WaxWalletContext';
 import { toast } from 'sonner';
+import { globalTimer } from '@/services/globalTimerService';
 
 export function useGamePhase(
   score: number,
@@ -11,8 +13,10 @@ export function useGamePhase(
   setIsVictoryModalOpen: (isOpen: boolean) => void
 ) {
   const [gamePhase, setGamePhase] = useState<GamePhase>('claim');
-  const [phaseTime, setPhaseTime] = useState(10); // Changed from 20 to 10 seconds for claim phase
+  const [phaseTime, setPhaseTime] = useState(10);
   const [playerFoundExit, setPlayerFoundExit] = useState(false);
+  const [lastRoundNumber, setLastRoundNumber] = useState(1);
+  const [hasShownJoinAlert, setHasShownJoinAlert] = useState(false);
   const { gameState, resetPlotClaim } = useWaxWallet();
 
   // Listen for exit found event
@@ -25,7 +29,7 @@ export function useGamePhase(
     return () => window.removeEventListener('player-found-exit', handleExitFound);
   }, []);
 
-  // Show toast message for plot claim status when phase changes
+  // Show toast message for plot claim status when phase changes to play
   useEffect(() => {
     if (gamePhase === 'play') {
       if (gameState.hasClaimedPlot) {
@@ -36,54 +40,66 @@ export function useGamePhase(
     }
   }, [gamePhase, gameState.hasClaimedPlot]);
 
-  // Game phase timer - continuously cycles through phases
+  // Global timer sync - continuously sync with global game state
   useEffect(() => {
-    if (phaseTime <= 0) {
-      if (gamePhase === 'claim') {
-        // Transition to play phase
-        setGamePhase('play');
-        setPhaseTime(300); // 300 seconds for play phase
-        setPlayerFoundExit(false); // Reset for new round
-      } else if (gamePhase === 'play') {
-        // Cycle back to claim phase for a new round
-        setGamePhase('claim');
-        setPhaseTime(10); // Changed from 20 to 10 seconds for claim phase
+    const syncWithGlobalTimer = () => {
+      const globalState = globalTimer.getCurrentGameState();
+      
+      setGamePhase(globalState.phase);
+      setPhaseTime(globalState.timeRemaining);
+      
+      // Handle round transitions
+      if (globalState.roundNumber !== lastRoundNumber) {
+        // New round started
+        setLastRoundNumber(globalState.roundNumber);
+        setRoundNumber(globalState.roundNumber);
         
-        // Save high score
-        const currentHighScore = parseInt(localStorage.getItem('pyrameme-high-score') || '0');
-        if (score > currentHighScore) {
-          localStorage.setItem('pyrameme-high-score', score.toString());
-        }
-        
-        // Show appropriate modal based on whether player found exit
+        // Only reset game state if we were playing the previous round
         if (gameState.currentPosition) {
+          // Save high score
+          const currentHighScore = parseInt(localStorage.getItem('pyrameme-high-score') || '0');
+          if (score > currentHighScore) {
+            localStorage.setItem('pyrameme-high-score', score.toString());
+          }
+          
+          // Show appropriate modal based on whether player found exit
           if (playerFoundExit) {
             setIsVictoryModalOpen(true);
-          } else {
-            // Show time up message
-            toast.info("The time is up. A fresh puzzle will load.");
+          } else if (gamePhase === 'claim') {
+            // Round just ended, show transition message
+            toast.info("Round ended! New round starting - claim your plot!");
           }
         }
         
-        // Reset plot claim status for next round
+        // Reset for new round
         resetPlotClaim();
-        
-        // Increment round number
-        setRoundNumber(roundNumber + 1);
-        
-        // Reset score for new round
         setScore(0);
         setPlayerFoundExit(false);
+        setHasShownJoinAlert(false);
       }
-      return;
-    }
+      
+      // Show join alerts for new players joining mid-game
+      if (!globalState.canJoinNow && !hasShownJoinAlert && !gameState.currentPosition) {
+        const timeUntilClaim = globalTimer.getTimeUntilNextClaimPhase();
+        const minutes = Math.floor(timeUntilClaim / 60);
+        const seconds = timeUntilClaim % 60;
+        
+        toast.info(
+          `Round ${globalState.roundNumber} in progress. Next claim phase in ${minutes}:${seconds.toString().padStart(2, '0')}`,
+          { duration: 5000 }
+        );
+        setHasShownJoinAlert(true);
+      }
+    };
 
-    const timer = setTimeout(() => {
-      setPhaseTime(prevTime => prevTime - 1);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [phaseTime, gamePhase, gameState.hasClaimedPlot, gameState.currentPosition, score, resetPlotClaim, setRoundNumber, setScore, setIsVictoryModalOpen, roundNumber, playerFoundExit]);
+    // Initial sync
+    syncWithGlobalTimer();
+    
+    // Set up interval to sync every second
+    const interval = setInterval(syncWithGlobalTimer, 1000);
+    
+    return () => clearInterval(interval);
+  }, [lastRoundNumber, gameState.currentPosition, gameState.hasClaimedPlot, score, playerFoundExit, hasShownJoinAlert, resetPlotClaim, setRoundNumber, setScore, setIsVictoryModalOpen, gamePhase]);
 
   return { gamePhase, phaseTime };
 }

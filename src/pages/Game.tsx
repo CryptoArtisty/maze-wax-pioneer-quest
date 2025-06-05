@@ -12,6 +12,7 @@ import BuyGoldModal from '@/components/game/BuyGoldModal';
 import GameTitle from '@/components/game/GameTitle';
 import GameContent from '@/components/game/GameContent';
 import GameStatusBar from '@/components/game/GameStatusBar';
+import GlobalGameStatus from '@/components/game/GlobalGameStatus';
 import { useGamePhase } from '@/hooks/useGamePhase';
 
 const Game: React.FC = () => {
@@ -47,6 +48,8 @@ const Game: React.FC = () => {
       <GameDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
       
       <GameTitle onOpenBuyGoldModal={() => setShowBuyGoldModal(true)} />
+      
+      <GlobalGameStatus />
       
       <GameStatusBar 
         gamePhase={gamePhase}
