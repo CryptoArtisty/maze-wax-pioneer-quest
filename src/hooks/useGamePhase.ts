@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { GamePhase } from '@/types/gameTypes';
 import { useWaxWallet } from '@/contexts/WaxWalletContext';
@@ -12,7 +11,7 @@ export function useGamePhase(
   setIsVictoryModalOpen: (isOpen: boolean) => void
 ) {
   const [gamePhase, setGamePhase] = useState<GamePhase>('claim');
-  const [phaseTime, setPhaseTime] = useState(20); // 20 seconds for claim phase
+  const [phaseTime, setPhaseTime] = useState(10); // Changed from 20 to 10 seconds for claim phase
   const [playerFoundExit, setPlayerFoundExit] = useState(false);
   const { gameState, resetPlotClaim } = useWaxWallet();
 
@@ -48,7 +47,7 @@ export function useGamePhase(
       } else if (gamePhase === 'play') {
         // Cycle back to claim phase for a new round
         setGamePhase('claim');
-        setPhaseTime(20); // Reset to 20 seconds for claim phase
+        setPhaseTime(10); // Changed from 20 to 10 seconds for claim phase
         
         // Save high score
         const currentHighScore = parseInt(localStorage.getItem('pyrameme-high-score') || '0');
