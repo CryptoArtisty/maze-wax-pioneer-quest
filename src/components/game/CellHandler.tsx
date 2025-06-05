@@ -30,8 +30,18 @@ export function useCellHandler({
   cellSize
 }: CellHandlerProps) {
 
-  const handleCellClick = useCallback(async (col: number, row: number) => {
-    console.log(`Cell clicked: [${col}, ${row}], Phase: ${gamePhase}`);
+  const handleCellClick = useCallback(async (pixelX: number, pixelY: number) => {
+    // Convert pixel coordinates to grid coordinates
+    const col = Math.floor(pixelX / cellSize);
+    const row = Math.floor(pixelY / cellSize);
+    
+    // Validate grid bounds
+    if (col < 0 || col >= cols || row < 0 || row >= rows) {
+      console.log(`Click out of bounds: pixel [${pixelX}, ${pixelY}] -> grid [${col}, ${row}]`);
+      return;
+    }
+    
+    console.log(`Cell clicked: pixel [${pixelX}, ${pixelY}] -> grid [${col}, ${row}], Phase: ${gamePhase}`);
     
     // Check global game state to ensure we can actually join
     const globalState = globalTimer.getCurrentGameState();
@@ -58,7 +68,7 @@ export function useCellHandler({
       // Check if the cell is available (not claimed by anyone)
       const targetCell = gridCells[row]?.[col];
       if (!targetCell) {
-        console.error("Target cell not found");
+        console.error(`Target cell not found at grid position [${col}, ${row}]`);
         return;
       }
 
@@ -67,7 +77,7 @@ export function useCellHandler({
         return;
       }
 
-      console.log(`Attempting to claim plot at [${col}, ${row}]`);
+      console.log(`Attempting to claim plot at grid [${col}, ${row}]`);
       
       // Attempt to claim the plot (free for now)
       const success = await claimPlot(col, row, 0);
