@@ -1,4 +1,3 @@
-
 export interface NetworkConfig {
   chainId: string;
   nodeUrl: string;
@@ -17,8 +16,8 @@ export class NetworkConfigService {
   private networks: Record<string, NetworkConfig> = {
     testnet: {
       chainId: 'f16b1833c747c43682f4386fca9cbb327929334a762755ebec17f6f23c9b8a12',
-      nodeUrl: 'https://testnet.waxsweden.org',
-      explorerUrl: 'https://wax-test.bloks.io',
+      nodeUrl: 'https://waxtestnet.greymass.com',
+      explorerUrl: 'https://testnet.waxblock.io',
       contractAccount: 'pyramemetest',
       isTestnet: true
     },
@@ -69,7 +68,7 @@ export class NetworkConfigService {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // Reduced to 5 seconds
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // Increased timeout for testnet
 
       const response = await fetch(`${this.getCurrentNetwork().nodeUrl}/v1/chain/get_info`, {
         signal: controller.signal,

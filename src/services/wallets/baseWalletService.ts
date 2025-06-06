@@ -8,7 +8,7 @@ export interface BaseWalletService {
 }
 
 export abstract class WalletServiceBase implements BaseWalletService {
-  protected developerWalletAddress: string = "wax.galaxy1";
+  protected developerWalletAddress: string = "poptheballon"; // Updated testnet developer wallet
   
   abstract login(): Promise<WaxUser | null>;
   abstract isInitialized(): boolean;

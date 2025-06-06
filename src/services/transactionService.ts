@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { PyramemeContract } from "./contracts/pyramemeContract";
 import { TransactionStatusService } from "./transactionStatusService";
@@ -8,7 +7,7 @@ export class TransactionService {
   private contract: PyramemeContract | null = null;
   private statusService: TransactionStatusService | null = null;
   private networkConfig = NetworkConfigService.getInstance();
-  private developerWallet: string = "wax.galaxy1";
+  private developerWallet: string = "poptheballon"; // Updated testnet developer wallet
   private simulationMode: boolean = false;
 
   setApi(api: any): void {
