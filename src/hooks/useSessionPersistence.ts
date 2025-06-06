@@ -1,10 +1,15 @@
 
 import { useEffect } from 'react';
 import { waxService } from '@/services/waxService';
+import { NetworkConfigService } from '@/services/networkConfigService';
 
 export function useSessionPersistence() {
   useEffect(() => {
-    // Restore network setting from localStorage on app start
+    // Initialize network configuration service
+    const networkConfig = NetworkConfigService.getInstance();
+    networkConfig.initialize();
+    
+    // Restore network setting and apply it to wax service
     const savedNetwork = localStorage.getItem('pyrameme-network');
     if (savedNetwork === 'testnet' || savedNetwork === 'mainnet') {
       waxService.setNetwork(savedNetwork);
@@ -12,7 +17,6 @@ export function useSessionPersistence() {
 
     // Set up cleanup interval for old transactions
     const cleanupInterval = setInterval(() => {
-      // This will be called by the transaction service internally
       const transactionHistory = waxService.getTransactionHistory();
       console.log(`Transaction cleanup check: ${transactionHistory.length} transactions`);
     }, 5 * 60 * 1000); // Every 5 minutes

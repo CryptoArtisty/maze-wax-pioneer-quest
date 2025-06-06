@@ -7,9 +7,11 @@ import { waxService } from '@/services/waxService';
 export const NetworkHealth: React.FC = () => {
   const [isHealthy, setIsHealthy] = useState<boolean | null>(null);
   const [isChecking, setIsChecking] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
+    let consecutiveFailures = 0;
 
     const checkHealth = async () => {
       if (isChecking) return;
@@ -17,9 +19,26 @@ export const NetworkHealth: React.FC = () => {
       setIsChecking(true);
       try {
         const healthy = await waxService.checkNetworkHealth();
-        setIsHealthy(healthy);
+        
+        if (healthy) {
+          consecutiveFailures = 0;
+          setIsHealthy(true);
+          setShowAlert(false);
+        } else {
+          consecutiveFailures++;
+          setIsHealthy(false);
+          
+          // Only show alert after 2 consecutive failures to avoid flashing
+          if (consecutiveFailures >= 2) {
+            setShowAlert(true);
+          }
+        }
       } catch (error) {
+        consecutiveFailures++;
         setIsHealthy(false);
+        if (consecutiveFailures >= 2) {
+          setShowAlert(true);
+        }
       } finally {
         setIsChecking(false);
       }
@@ -28,36 +47,34 @@ export const NetworkHealth: React.FC = () => {
     // Initial check
     checkHealth();
 
-    // Check every 30 seconds
-    interval = setInterval(checkHealth, 30000);
+    // Check every 60 seconds instead of 30 to reduce network load
+    interval = setInterval(checkHealth, 60000);
 
     return () => {
       if (interval) clearInterval(interval);
     };
   }, [isChecking]);
 
-  // Don't show anything if network is healthy
-  if (isHealthy === true) return null;
+  // Don't show anything if network is healthy or we haven't checked yet
+  if (!showAlert || isHealthy === true) return null;
 
-  // Show warning if network is unhealthy
+  // Show warning if network is consistently unhealthy
   if (isHealthy === false) {
     return (
-      <Alert className="fixed top-16 left-4 right-4 z-40 bg-yellow-900 border-yellow-700 text-yellow-100">
+      <Alert className="fixed top-16 left-4 right-4 z-40 bg-yellow-900/90 border-yellow-700 text-yellow-100 backdrop-blur-sm">
         <AlertTriangle className="h-4 w-4" />
-        <AlertDescription>
-          WAX network connection issues detected. Transactions may fail or be delayed.
+        <AlertDescription className="flex justify-between items-center">
+          <span>WAX network connection issues. Game functions may be limited.</span>
+          <button 
+            onClick={() => setShowAlert(false)}
+            className="text-yellow-300 hover:text-yellow-100 ml-2 text-sm underline"
+          >
+            Dismiss
+          </button>
         </AlertDescription>
       </Alert>
     );
   }
 
-  // Show loading state
-  return (
-    <Alert className="fixed top-16 left-4 right-4 z-40 bg-blue-900 border-blue-700 text-blue-100">
-      <Wifi className="h-4 w-4 animate-pulse" />
-      <AlertDescription>
-        Checking WAX network status...
-      </AlertDescription>
-    </Alert>
-  );
+  return null;
 };

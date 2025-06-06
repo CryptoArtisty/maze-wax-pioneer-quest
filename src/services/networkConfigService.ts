@@ -10,20 +10,23 @@ export interface NetworkConfig {
 export class NetworkConfigService {
   private static instance: NetworkConfigService;
   private currentNetwork: 'testnet' | 'mainnet' = 'testnet';
+  private lastHealthCheck: number = 0;
+  private healthCheckCache: boolean | null = null;
+  private readonly HEALTH_CHECK_CACHE_DURATION = 60000; // 1 minute cache
 
   private networks: Record<string, NetworkConfig> = {
     testnet: {
       chainId: 'f16b1833c747c43682f4386fca9cbb327929334a762755ebec17f6f23c9b8a12',
       nodeUrl: 'https://testnet.waxsweden.org',
       explorerUrl: 'https://wax-test.bloks.io',
-      contractAccount: 'pyramemetest', // Testnet contract account
+      contractAccount: 'pyramemetest',
       isTestnet: true
     },
     mainnet: {
       chainId: '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4',
       nodeUrl: 'https://wax.greymass.com',
       explorerUrl: 'https://wax.bloks.io',
-      contractAccount: 'pyramemegame', // Mainnet contract account
+      contractAccount: 'pyramemegame',
       isTestnet: false
     }
   };
@@ -41,6 +44,7 @@ export class NetworkConfigService {
 
   setNetwork(network: 'testnet' | 'mainnet'): void {
     this.currentNetwork = network;
+    this.healthCheckCache = null; // Reset cache when network changes
     console.log(`Switched to ${network}:`, this.getCurrentNetwork());
     
     // Save to localStorage for persistence
@@ -56,9 +60,16 @@ export class NetworkConfigService {
   }
 
   async checkNetworkHealth(): Promise<boolean> {
+    const now = Date.now();
+    
+    // Use cached result if within cache duration
+    if (this.healthCheckCache !== null && (now - this.lastHealthCheck) < this.HEALTH_CHECK_CACHE_DURATION) {
+      return this.healthCheckCache;
+    }
+
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // Reduced to 5 seconds
 
       const response = await fetch(`${this.getCurrentNetwork().nodeUrl}/v1/chain/get_info`, {
         signal: controller.signal,
@@ -78,6 +89,10 @@ export class NetworkConfigService {
       const info = await response.json();
       const isHealthy = !!info.chain_id && info.chain_id === this.getCurrentNetwork().chainId;
       
+      // Cache the result
+      this.healthCheckCache = isHealthy;
+      this.lastHealthCheck = now;
+      
       if (!isHealthy) {
         console.warn('Network health check failed: Chain ID mismatch', {
           expected: this.getCurrentNetwork().chainId,
@@ -87,7 +102,14 @@ export class NetworkConfigService {
       
       return isHealthy;
     } catch (error) {
-      console.error("Network health check failed:", error);
+      // Only log errors that aren't AbortError to reduce console spam
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error("Network health check failed:", error);
+      }
+      
+      // Cache failed result for shorter duration
+      this.healthCheckCache = false;
+      this.lastHealthCheck = now;
       return false;
     }
   }
