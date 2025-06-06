@@ -6,8 +6,9 @@ export class GlobalTimerService {
   // In production, this would be synchronized with server time
   private gameStartTime: number;
   private readonly CLAIM_PHASE_DURATION = 10; // 10 seconds
-  private readonly PLAY_PHASE_DURATION = 300; // 300 seconds (5 minutes)
+  private readonly PLAY_PHASE_DURATION = 120; // 120 seconds (2 minutes)
   private readonly TOTAL_ROUND_DURATION = this.CLAIM_PHASE_DURATION + this.PLAY_PHASE_DURATION;
+  private readonly DAILY_RESET_DURATION = 24 * 60 * 60; // 24 hours in seconds
 
   private constructor() {
     // Initialize game start time from localStorage or current time
@@ -33,8 +34,10 @@ export class GlobalTimerService {
     const now = Date.now();
     const elapsedTime = Math.floor((now - this.gameStartTime) / 1000); // seconds since game start
     
-    const currentRound = Math.floor(elapsedTime / this.TOTAL_ROUND_DURATION) + 1;
-    const timeInCurrentRound = elapsedTime % this.TOTAL_ROUND_DURATION;
+    // Calculate daily cycles
+    const timeInCurrentDay = elapsedTime % this.DAILY_RESET_DURATION;
+    const currentRound = Math.floor(timeInCurrentDay / this.TOTAL_ROUND_DURATION) + 1;
+    const timeInCurrentRound = timeInCurrentDay % this.TOTAL_ROUND_DURATION;
     
     if (timeInCurrentRound < this.CLAIM_PHASE_DURATION) {
       // Claim phase

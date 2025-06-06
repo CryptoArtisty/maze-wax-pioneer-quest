@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { GamePhase } from '@/types/gameTypes';
 import { useWaxWallet } from '@/contexts/WaxWalletContext';

@@ -18,10 +18,10 @@ const GameStatusBar: React.FC<GameStatusBarProps> = ({
   // Calculate progress based on phase
   const getPhaseProgress = () => {
     if (gamePhase === 'claim') {
-      const maxTime = 10; // Changed from 20 to 10 seconds for claim phase
+      const maxTime = 10; // 10 seconds for claim phase
       return ((maxTime - phaseTime) / maxTime) * 100;
     } else {
-      const maxTime = 300; // 300 seconds for play phase
+      const maxTime = 120; // 120 seconds (2 minutes) for play phase
       return ((maxTime - phaseTime) / maxTime) * 100;
     }
   };
