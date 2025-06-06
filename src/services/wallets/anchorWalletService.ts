@@ -21,7 +21,7 @@ export class AnchorWalletService extends WalletServiceBase {
       
       const chainConfig = this.isTestnet ? {
         chainId: 'f16b1833c747c43682f4386fca9cbb327929334a762755ebec17f6f23c9b8a12',
-        nodeUrl: 'https://testnet.waxsweden.org'
+        nodeUrl: 'https://waxtestnet.greymass.com'
       } : {
         chainId: '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4',
         nodeUrl: 'https://wax.greymass.com'
@@ -31,7 +31,7 @@ export class AnchorWalletService extends WalletServiceBase {
         chains: [chainConfig],
         transport: transport
       });
-      console.log(`Anchor Wallet service initialized (${this.isTestnet ? 'testnet' : 'mainnet'})`);
+      console.log(`Anchor Wallet service initialized (${this.isTestnet ? 'testnet' : 'mainnet'}) with endpoint: ${chainConfig.nodeUrl}`);
     } catch (error) {
       console.error("Error initializing Anchor Wallet:", error);
       toast.error("Failed to initialize Anchor Wallet");
@@ -62,7 +62,7 @@ export class AnchorWalletService extends WalletServiceBase {
         permission: 'active' // Default to 'active' since permission isn't available on LinkSession
       };
       
-      toast.success(`Successfully logged in as ${user.account}`);
+      toast.success(`Successfully logged in as ${user.account} on ${this.isTestnet ? 'testnet' : 'mainnet'}`);
       return user;
     } catch (error: any) {
       console.error("Anchor wallet login failed:", error);

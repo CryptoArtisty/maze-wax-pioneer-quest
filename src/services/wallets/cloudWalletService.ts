@@ -32,7 +32,7 @@ export class CloudWalletService extends WalletServiceBase {
       }
       
       const rpcEndpoint = this.isTestnet 
-        ? 'https://testnet.waxsweden.org' 
+        ? 'https://waxtestnet.greymass.com' 
         : 'https://wax.greymass.com';
       
       this.wax = new waxjs.WaxJS({
@@ -40,7 +40,7 @@ export class CloudWalletService extends WalletServiceBase {
         tryAutoLogin: false
       });
       
-      console.log(`WAX Cloud Wallet service initialized (${this.isTestnet ? 'testnet' : 'mainnet'})`);
+      console.log(`WAX Cloud Wallet service initialized (${this.isTestnet ? 'testnet' : 'mainnet'}) with endpoint: ${rpcEndpoint}`);
     } catch (error) {
       console.error("Error initializing WAX Cloud Wallet:", error);
       // Don't show toast error during initialization to avoid spam
@@ -75,7 +75,7 @@ export class CloudWalletService extends WalletServiceBase {
         permission: 'active'
       };
       
-      toast.success(`Successfully logged in as ${user.account}`);
+      toast.success(`Successfully logged in as ${user.account} on ${this.isTestnet ? 'testnet' : 'mainnet'}`);
       return user;
     } catch (error: any) {
       console.error("Cloud wallet login failed:", error);
