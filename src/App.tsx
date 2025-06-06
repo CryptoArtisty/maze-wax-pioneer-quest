@@ -29,14 +29,12 @@ const queryClient = new QueryClient({
 
 const AppRouter = () => {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/game" element={<Game />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/game" element={<Game />} />
+      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 };
 
@@ -57,9 +55,11 @@ const AppContent = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <WaxWalletProvider>
-        <AppContent />
-      </WaxWalletProvider>
+      <BrowserRouter>
+        <WaxWalletProvider>
+          <AppContent />
+        </WaxWalletProvider>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );

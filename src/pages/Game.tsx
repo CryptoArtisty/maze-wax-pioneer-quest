@@ -21,7 +21,20 @@ const Game: React.FC = () => {
   const [score, setScore] = useState(0);
   const [roundNumber, setRoundNumber] = useState(1);
   const [showBuyGoldModal, setShowBuyGoldModal] = useState(false);
-  const { gameState } = useWaxWallet();
+  
+  // Add defensive check for context
+  let gameState, resetPlotClaim;
+  try {
+    const walletContext = useWaxWallet();
+    gameState = walletContext.gameState;
+    resetPlotClaim = walletContext.resetPlotClaim;
+  } catch (error) {
+    console.error("WaxWallet context error:", error);
+    // Fallback to prevent crash
+    gameState = { isAuthenticated: false };
+    resetPlotClaim = () => {};
+  }
+  
   const navigate = useNavigate();
   
   const { gamePhase, phaseTime } = useGamePhase(
@@ -34,10 +47,10 @@ const Game: React.FC = () => {
 
   // Redirect to login if not authenticated
   useEffect(() => {
-    if (!gameState.isAuthenticated) {
+    if (!gameState?.isAuthenticated) {
       navigate('/');
     }
-  }, [gameState.isAuthenticated, navigate]);
+  }, [gameState?.isAuthenticated, navigate]);
 
   const toggleDrawer = () => setIsDrawerOpen(!isDrawerOpen);
 
