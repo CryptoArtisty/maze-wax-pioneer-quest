@@ -1,4 +1,3 @@
-
 import * as waxjs from "@waxio/waxjs/dist";
 import { WaxUser } from "@/types/waxTypes";
 import { toast } from "sonner";
@@ -6,7 +5,7 @@ import { WalletServiceBase } from "./baseWalletService";
 
 export class CloudWalletService extends WalletServiceBase {
   private wax: waxjs.WaxJS | null = null;
-  private isTestnet: boolean = true;
+  private isTestnet: boolean = false; // Set to false for mainnet default
   private initializationPromise: Promise<void> | null = null;
 
   constructor() {

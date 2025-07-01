@@ -1,4 +1,3 @@
-
 import AnchorLink from "anchor-link";
 import AnchorLinkBrowserTransport from "anchor-link-browser-transport";
 import { WaxUser } from "@/types/waxTypes";
@@ -8,7 +7,7 @@ import { WalletServiceBase } from "./baseWalletService";
 export class AnchorWalletService extends WalletServiceBase {
   private anchorLink: AnchorLink | null = null;
   private anchorSession: any = null;
-  private isTestnet: boolean = true; // Set to false for mainnet
+  private isTestnet: boolean = false; // Set to false for mainnet default
 
   constructor() {
     super();

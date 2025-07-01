@@ -1,3 +1,4 @@
+import { NetworkConfigService } from "../networkConfigService";
 
 export interface PyramemeContractActions {
   claimplot: {
@@ -45,9 +46,13 @@ export interface PyramemeContractTables {
 }
 
 export class PyramemeContract {
-  private contractAccount: string = "pyramemegame"; // Replace with actual contract account
+  private networkConfig = NetworkConfigService.getInstance();
   
   constructor(private api: any) {}
+
+  private get contractAccount(): string {
+    return this.networkConfig.getCurrentNetwork().contractAccount;
+  }
 
   async claimPlot(player: string, x: number, y: number): Promise<any> {
     if (!this.api) {

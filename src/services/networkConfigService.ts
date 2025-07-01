@@ -8,7 +8,7 @@ export interface NetworkConfig {
 
 export class NetworkConfigService {
   private static instance: NetworkConfigService;
-  private currentNetwork: 'testnet' | 'mainnet' = 'testnet';
+  private currentNetwork: 'testnet' | 'mainnet' = 'mainnet'; // Changed default to mainnet
   private lastHealthCheck: number = 0;
   private healthCheckCache: boolean | null = null;
   private readonly HEALTH_CHECK_CACHE_DURATION = 60000; // 1 minute cache
@@ -25,7 +25,7 @@ export class NetworkConfigService {
       chainId: '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4',
       nodeUrl: 'https://wax.greymass.com',
       explorerUrl: 'https://wax.bloks.io',
-      contractAccount: 'pyramemegame',
+      contractAccount: 'pyramemegame', // Confirmed contract account
       isTestnet: false
     }
   };
@@ -68,7 +68,7 @@ export class NetworkConfigService {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // Increased timeout for testnet
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // Reduced timeout for mainnet
 
       const response = await fetch(`${this.getCurrentNetwork().nodeUrl}/v1/chain/get_info`, {
         signal: controller.signal,
@@ -119,6 +119,10 @@ export class NetworkConfigService {
     if (savedNetwork === 'testnet' || savedNetwork === 'mainnet') {
       this.currentNetwork = savedNetwork;
       console.log(`Restored network setting: ${savedNetwork}`);
+    } else {
+      // Default to mainnet if no saved setting
+      this.currentNetwork = 'mainnet';
+      console.log('Defaulting to mainnet');
     }
   }
 }

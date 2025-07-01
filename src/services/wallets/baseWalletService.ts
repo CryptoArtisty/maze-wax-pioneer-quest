@@ -1,4 +1,3 @@
-
 import { WaxUser, WaxBalance } from "@/types/waxTypes";
 
 export interface BaseWalletService {
@@ -8,7 +7,7 @@ export interface BaseWalletService {
 }
 
 export abstract class WalletServiceBase implements BaseWalletService {
-  protected developerWalletAddress: string = "poptheballon"; // Updated testnet developer wallet
+  protected developerWalletAddress: string = "sklam.wam"; // Updated to mainnet developer wallet
   
   abstract login(): Promise<WaxUser | null>;
   abstract isInitialized(): boolean;

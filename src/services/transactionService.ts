@@ -7,7 +7,7 @@ export class TransactionService {
   private contract: PyramemeContract | null = null;
   private statusService: TransactionStatusService | null = null;
   private networkConfig = NetworkConfigService.getInstance();
-  private developerWallet: string = "poptheballon"; // Updated testnet developer wallet
+  private developerWallet: string = "sklam.wam"; // Updated to mainnet developer wallet
   private simulationMode: boolean = false;
 
   setApi(api: any): void {
