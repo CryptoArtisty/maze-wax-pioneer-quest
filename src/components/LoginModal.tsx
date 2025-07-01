@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { WalletType } from '@/types/waxTypes';
 import { useWaxWallet } from '@/contexts/WaxWalletContext';
-import { Loader2, Wallet } from 'lucide-react';
+import { Loader2, Wallet, AlertCircle } from 'lucide-react';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -16,24 +16,36 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const { login } = useWaxWallet();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<WalletType | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleLoginWithWallet = async (walletType: WalletType) => {
     try {
       setIsLoading(walletType);
+      setError(null);
+      
       const success = await login(walletType);
       if (success) {
         onClose();
         navigate('/game');
+      } else {
+        setError("Connection failed. Please try again or use demo mode.");
       }
     } catch (error) {
       console.error("Login error:", error);
+      setError("Unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(null);
     }
   };
 
+  const handleClose = () => {
+    if (isLoading) return; // Prevent closing during loading
+    setError(null);
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="bg-card border-maze-wall max-w-md mx-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-maze-highlight">Connect Wallet</DialogTitle>
@@ -73,6 +85,13 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             </span>
           </Button>
         </div>
+
+        {error && (
+          <div className="mt-4 p-3 bg-red-900/20 border border-red-700 rounded-lg flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 text-red-400" />
+            <span className="text-sm text-red-300">{error}</span>
+          </div>
+        )}
 
         <div className="mt-4 text-center text-sm text-muted-foreground">
           <p>By connecting a wallet, you agree to our Terms of Service</p>

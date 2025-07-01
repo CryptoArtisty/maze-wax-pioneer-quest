@@ -1,3 +1,4 @@
+
 import { WaxUser, WaxBalance } from "@/types/waxTypes";
 
 export interface BaseWalletService {
@@ -17,20 +18,24 @@ export abstract class WalletServiceBase implements BaseWalletService {
     try {
       const api = this.getApi();
       if (!api) {
-        throw new Error("No API instance available");
+        console.warn("No API instance available for balance check");
+        return {
+          waxp: "0.0000",
+          pgl: "0.0000"
+        };
       }
       
       // Add timeout for balance requests
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Balance request timeout")), 5000)
+        setTimeout(() => reject(new Error("Balance request timeout")), 8000)
       );
       
       const balancePromise = api.rpc.get_currency_balance('eosio.token', account, 'WAX');
       const pglPromise = api.rpc.get_currency_balance('prospectorsг', account, 'PGL');
       
       const [balance, pglBalance] = await Promise.all([
-        Promise.race([balancePromise, timeoutPromise]),
-        Promise.race([pglPromise, timeoutPromise]).catch(() => []) // PGL might not exist on testnet
+        Promise.race([balancePromise, timeoutPromise]).catch(() => ["0.0000 WAX"]),
+        Promise.race([pglPromise, timeoutPromise]).catch(() => []) // PGL might not exist
       ]);
       
       return {
@@ -39,9 +44,6 @@ export abstract class WalletServiceBase implements BaseWalletService {
       };
     } catch (error) {
       console.error("Failed to get balance:", error);
-      if (error instanceof Error && error.message.includes("timeout")) {
-        console.warn("Balance request timed out, using default values");
-      }
       return {
         waxp: "0.0000",
         pgl: "0.0000"
