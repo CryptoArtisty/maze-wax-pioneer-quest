@@ -45,13 +45,8 @@ export class AnchorWalletService extends WalletServiceBase {
 
       toast.info("Connecting to Anchor Wallet...");
       
-      // Add timeout for login
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Login timeout")), 30000)
-      );
-      
-      const loginPromise = this.anchorLink.login('Pyrameme Quest');
-      const identity = await Promise.race([loginPromise, timeoutPromise]) as any;
+      // Login with Anchor
+      const identity = await this.anchorLink.login('Pyrameme Quest');
       
       this.anchorSession = identity.session;
       

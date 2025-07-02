@@ -39,14 +39,10 @@ export class CloudWalletService extends WalletServiceBase {
         ? 'https://waxtestnet.greymass.com' 
         : 'https://wax.greymass.com';
       
-      // Initialize with minimal configuration to prevent fetch errors during startup
+      // Initialize with simple configuration
       this.wax = new waxjs.WaxJS({
         rpcEndpoint,
-        tryAutoLogin: false,
-        userAccount: "",
-        pubKeys: [],
-        // Prevent automatic key fetching during initialization
-        freeBandwidth: false
+        tryAutoLogin: false
       });
       
       console.log(`WAX Cloud Wallet service initialized (${this.isTestnet ? 'testnet' : 'mainnet'}) with endpoint: ${rpcEndpoint}`);
@@ -81,23 +77,17 @@ export class CloudWalletService extends WalletServiceBase {
         throw new Error("No user account returned from login");
       }
       
-      // Try to get account info with better error handling
+      // Get public key from the wax instance after login
       let publicKey = "";
       try {
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Account info timeout")), 10000)
-        );
-        
-        const accountInfoPromise = this.wax.api.rpc.get_account(userAccount);
-        const accountInfo = await Promise.race([accountInfoPromise, timeoutPromise]) as any;
-        
-        if (accountInfo && accountInfo.permissions && accountInfo.permissions.length > 0) {
-          publicKey = accountInfo.permissions[0].required_auth.keys[0].key;
+        if (this.wax.pubKeys && this.wax.pubKeys.length > 0) {
+          publicKey = this.wax.pubKeys[0];
+        } else {
+          publicKey = "EOS...connected";
         }
       } catch (error) {
-        console.warn("Could not fetch account info, using placeholder:", error);
-        // Use a placeholder public key if we can't fetch it
-        publicKey = "EOS5...placeholder";
+        console.warn("Could not get public key, using placeholder:", error);
+        publicKey = "EOS...connected";
       }
       
       const user: WaxUser = {
