@@ -39,13 +39,14 @@ export class CloudWalletService extends WalletServiceBase {
         ? 'https://waxtestnet.greymass.com' 
         : 'https://wax.greymass.com';
       
-      // Add additional configuration to handle CORS and network issues
+      // Initialize with minimal configuration to prevent fetch errors during startup
       this.wax = new waxjs.WaxJS({
         rpcEndpoint,
         tryAutoLogin: false,
-        // Add userAccount and pubKeys to avoid fetching during initialization
-        userAccount: null,
-        pubKeys: null
+        userAccount: "",
+        pubKeys: [],
+        // Prevent automatic key fetching during initialization
+        freeBandwidth: false
       });
       
       console.log(`WAX Cloud Wallet service initialized (${this.isTestnet ? 'testnet' : 'mainnet'}) with endpoint: ${rpcEndpoint}`);
