@@ -23,16 +23,20 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       setIsLoading(walletType);
       setError(null);
       
+      console.log(`Attempting login with ${walletType} wallet...`);
+      
       const success = await login(walletType);
       if (success) {
+        console.log(`Successfully logged in with ${walletType} wallet`);
         onClose();
         navigate('/game');
       } else {
-        setError("Connection failed. Please try again or use demo mode.");
+        console.warn(`Login failed for ${walletType} wallet`);
+        setError(`${walletType} wallet connection failed. Please try again or use demo mode.`);
       }
     } catch (error) {
-      console.error("Login error:", error);
-      setError("Unexpected error occurred. Please try again.");
+      console.error(`Login error for ${walletType}:`, error);
+      setError(`Unexpected error with ${walletType} wallet. Please try again.`);
     } finally {
       setIsLoading(null);
     }

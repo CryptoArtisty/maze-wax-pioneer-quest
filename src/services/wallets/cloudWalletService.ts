@@ -55,8 +55,10 @@ export class CloudWalletService extends WalletServiceBase {
 
   async login(): Promise<WaxUser | null> {
     try {
-      // Ensure wallet is initialized
-      await this.initialize();
+      // Ensure wallet is initialized before login
+      if (!this.wax) {
+        await this.initialize();
+      }
       
       if (!this.wax) {
         throw new Error("WAX Cloud Wallet failed to initialize");
