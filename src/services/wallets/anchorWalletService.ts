@@ -11,7 +11,7 @@ export class AnchorWalletService extends WalletServiceBase {
 
   constructor() {
     super();
-    this.initialize();
+    // Don't initialize immediately - wait for login request
   }
 
   private initialize(): void {
@@ -39,6 +39,9 @@ export class AnchorWalletService extends WalletServiceBase {
 
   async login(): Promise<WaxUser | null> {
     try {
+      // Initialize only when login is requested
+      this.initialize();
+      
       if (!this.anchorLink) {
         throw new Error("Anchor Wallet not initialized");
       }

@@ -13,7 +13,7 @@ export class CloudWalletService extends WalletServiceBase {
 
   constructor() {
     super();
-    this.initialize();
+    // Don't initialize immediately - wait for login request
   }
 
   private async initialize(): Promise<void> {
@@ -39,7 +39,7 @@ export class CloudWalletService extends WalletServiceBase {
         ? 'https://waxtestnet.greymass.com' 
         : 'https://wax.greymass.com';
       
-      // Initialize with simple configuration
+      // Only initialize when actually needed to avoid startup fetch errors
       this.wax = new waxjs.WaxJS({
         rpcEndpoint,
         tryAutoLogin: false
@@ -49,13 +49,7 @@ export class CloudWalletService extends WalletServiceBase {
     } catch (error) {
       console.error("Error initializing WAX Cloud Wallet:", error);
       this.wax = null;
-      
-      // Retry initialization if we haven't exceeded max attempts
-      if (this.initializationAttempts < this.maxInitializationAttempts) {
-        console.log(`Retrying WAX Cloud Wallet initialization (attempt ${this.initializationAttempts + 1}/${this.maxInitializationAttempts})`);
-        this.initializationPromise = null;
-        setTimeout(() => this.initialize(), 2000);
-      }
+      throw error; // Re-throw to handle in login
     }
   }
 
