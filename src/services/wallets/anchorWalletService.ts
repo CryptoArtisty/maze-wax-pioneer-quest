@@ -7,17 +7,15 @@ import { WalletServiceBase } from "./baseWalletService";
 export class AnchorWalletService extends WalletServiceBase {
   private anchorLink: AnchorLink | null = null;
   private anchorSession: any = null;
-  private isTestnet: boolean = false; // Set to false for mainnet default
+  private isTestnet: boolean = false;
 
   constructor() {
     super();
-    this.initialize();
   }
 
-  private initialize(): void {
+  private async initializeAnchor(): Promise<void> {
     try {
       const transport = new AnchorLinkBrowserTransport({
-        // Enable request status callbacks for better UX
         requestStatus: true
       });
       
@@ -29,28 +27,36 @@ export class AnchorWalletService extends WalletServiceBase {
         nodeUrl: 'https://wax.greymass.com'
       };
       
+      console.log(`Initializing Anchor Wallet with endpoint: ${chainConfig.nodeUrl}`);
+      
       this.anchorLink = new AnchorLink({
         chains: [chainConfig],
         transport: transport
       });
       
-      console.log(`Anchor Wallet service initialized (${this.isTestnet ? 'testnet' : 'mainnet'}) with endpoint: ${chainConfig.nodeUrl}`);
+      console.log('Anchor Wallet initialized successfully');
     } catch (error) {
-      console.error("Error initializing Anchor Wallet:", error);
-      toast.error("Failed to initialize Anchor Wallet");
+      console.error("Anchor Wallet initialization failed:", error);
+      this.anchorLink = null;
+      throw error;
     }
   }
 
   async login(): Promise<WaxUser | null> {
     try {
+      console.log('Starting Anchor Wallet login...');
+      
+      // Initialize wallet on demand
+      await this.initializeAnchor();
+      
       if (!this.anchorLink) {
-        throw new Error("Anchor Wallet not initialized");
+        throw new Error("Anchor Wallet initialization failed");
       }
 
       toast.info("Opening Anchor Wallet...");
       
-      // Use proper Anchor login with error handling
       const identity = await this.anchorLink.login('Pyrameme Quest');
+      console.log('Anchor login response:', identity);
       
       if (!identity || !identity.session) {
         throw new Error("No identity returned from Anchor login");
@@ -64,19 +70,18 @@ export class AnchorWalletService extends WalletServiceBase {
         permission: identity.session.auth.permission.toString()
       };
       
-      toast.success(`Successfully logged in as ${user.account} on ${this.isTestnet ? 'testnet' : 'mainnet'}`);
+      console.log('Anchor Wallet login successful:', user);
+      toast.success(`Connected to ${user.account}`);
       return user;
     } catch (error: any) {
-      console.error("Anchor wallet login failed:", error);
+      console.error("Anchor wallet login error:", error);
       
-      if (error.code === "E_CANCEL" || error.message?.includes("canceled") || error.message?.includes("cancelled")) {
-        toast.info("Login cancelled by user");
+      if (error.code === "E_CANCEL" || error.message?.includes("cancel")) {
+        toast.info("Login cancelled");
       } else if (error.message?.includes("timeout")) {
         toast.error("Login timeout - please try again");
-      } else if (error.message?.includes("No identity")) {
-        toast.error("Failed to get identity from Anchor - please try again");
       } else {
-        toast.error("Failed to log in with Anchor Wallet. Please ensure Anchor is installed and try again.");
+        toast.error("Anchor Wallet connection failed - please ensure Anchor is installed");
       }
       return null;
     }
@@ -94,12 +99,11 @@ export class AnchorWalletService extends WalletServiceBase {
     this.anchorSession = null;
   }
 
-  // Add method to switch between testnet and mainnet
   setTestnet(isTestnet: boolean): void {
     if (this.isTestnet !== isTestnet) {
       this.isTestnet = isTestnet;
       this.clearSession();
-      this.initialize();
+      this.anchorLink = null; // Clear existing instance
     }
   }
 }

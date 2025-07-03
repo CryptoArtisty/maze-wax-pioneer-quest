@@ -6,59 +6,45 @@ import { WalletServiceBase } from "./baseWalletService";
 
 export class CloudWalletService extends WalletServiceBase {
   private wax: waxjs.WaxJS | null = null;
-  private isTestnet: boolean = false; // Set to false for mainnet default
-  private initializationPromise: Promise<void> | null = null;
-  private initializationAttempts: number = 0;
-  private maxInitializationAttempts: number = 3;
+  private isTestnet: boolean = false;
 
   constructor() {
     super();
-    // Don't initialize immediately - wait for login request
   }
 
-  private async initialize(): Promise<void> {
-    if (this.initializationPromise) {
-      return this.initializationPromise;
-    }
-
-    this.initializationPromise = this.doInitialize();
-    return this.initializationPromise;
-  }
-
-  private async doInitialize(): Promise<void> {
+  private async initializeWax(): Promise<void> {
     try {
-      this.initializationAttempts++;
-      
-      // Create a polyfill for the browser environment
-      if (typeof window !== 'undefined') {
+      // Browser polyfill
+      if (typeof window !== 'undefined' && !window.global) {
         // @ts-ignore
-        if (!window.global) window.global = window;
+        window.global = window;
       }
       
       const rpcEndpoint = this.isTestnet 
         ? 'https://waxtestnet.greymass.com' 
         : 'https://wax.greymass.com';
       
-      // Only initialize when actually needed to avoid startup fetch errors
+      console.log(`Initializing WAX Cloud Wallet with endpoint: ${rpcEndpoint}`);
+      
       this.wax = new waxjs.WaxJS({
         rpcEndpoint,
         tryAutoLogin: false
       });
       
-      console.log(`WAX Cloud Wallet service initialized (${this.isTestnet ? 'testnet' : 'mainnet'}) with endpoint: ${rpcEndpoint}`);
+      console.log('WAX Cloud Wallet initialized successfully');
     } catch (error) {
-      console.error("Error initializing WAX Cloud Wallet:", error);
+      console.error("WAX Cloud Wallet initialization failed:", error);
       this.wax = null;
-      throw error; // Re-throw to handle in login
+      throw error;
     }
   }
 
   async login(): Promise<WaxUser | null> {
     try {
-      // Ensure wallet is initialized before login
-      if (!this.wax) {
-        await this.initialize();
-      }
+      console.log('Starting WAX Cloud Wallet login...');
+      
+      // Initialize wallet on demand
+      await this.initializeWax();
       
       if (!this.wax) {
         throw new Error("WAX Cloud Wallet failed to initialize");
@@ -66,24 +52,21 @@ export class CloudWalletService extends WalletServiceBase {
 
       toast.info("Opening WAX Cloud Wallet...");
       
-      // Use a more robust approach for login
       const userAccount = await this.wax.login();
+      console.log('WAX login response:', userAccount);
       
       if (!userAccount) {
         throw new Error("No user account returned from login");
       }
       
-      // Get public key from the wax instance after login
-      let publicKey = "";
+      // Get public key safely
+      let publicKey = "EOS...connected";
       try {
         if (this.wax.pubKeys && this.wax.pubKeys.length > 0) {
           publicKey = this.wax.pubKeys[0];
-        } else {
-          publicKey = "EOS...connected";
         }
       } catch (error) {
-        console.warn("Could not get public key, using placeholder:", error);
-        publicKey = "EOS...connected";
+        console.warn("Could not get public key:", error);
       }
       
       const user: WaxUser = {
@@ -92,21 +75,18 @@ export class CloudWalletService extends WalletServiceBase {
         permission: 'active'
       };
       
-      toast.success(`Successfully logged in as ${user.account} on ${this.isTestnet ? 'testnet' : 'mainnet'}`);
+      console.log('WAX Cloud Wallet login successful:', user);
+      toast.success(`Connected to ${user.account}`);
       return user;
     } catch (error: any) {
-      console.error("Cloud wallet login failed:", error);
+      console.error("WAX Cloud Wallet login error:", error);
       
-      if (error.message?.includes("user closed the window") || error.message?.includes("User rejected")) {
-        toast.info("Login cancelled by user");
+      if (error.message?.includes("user closed") || error.message?.includes("User rejected")) {
+        toast.info("Login cancelled");
       } else if (error.message?.includes("timeout")) {
-        toast.error("Connection timeout - please try again or use demo mode");
-      } else if (error.message?.includes("Failed to fetch") || error.message?.includes("fetch")) {
-        toast.error("Network connection issue - you can still play in demo mode");
-      } else if (error.message?.includes("initialize")) {
-        toast.error("Wallet initialization failed - demo mode is available");
+        toast.error("Connection timeout - please try again");
       } else {
-        toast.error("Login failed - demo mode is available for testing");
+        toast.error("WAX Cloud Wallet connection failed");
       }
       return null;
     }
@@ -123,10 +103,7 @@ export class CloudWalletService extends WalletServiceBase {
   setTestnet(isTestnet: boolean): void {
     if (this.isTestnet !== isTestnet) {
       this.isTestnet = isTestnet;
-      this.initializationPromise = null; // Reset initialization promise
-      this.initializationAttempts = 0; // Reset attempt counter
       this.wax = null; // Clear existing instance
-      this.initialize();
     }
   }
 }
