@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { WalletType, WaxUser } from '@/types/waxTypes';
-import { waxService } from '@/services/waxService';
+import { simpleWalletService } from '@/services/simpleWalletService';
 import { toast } from 'sonner';
 import { GameAction, GameActionType } from '@/reducers/gameStateReducer';
 
@@ -10,13 +10,13 @@ export function useWaxWalletActions(dispatch: React.Dispatch<GameAction>) {
     
     try {
       if (walletType === WalletType.CLOUD) {
-        user = await waxService.loginWithCloudWallet();
+        user = await simpleWalletService.loginCloud();
       } else if (walletType === WalletType.ANCHOR) {
-        user = await waxService.loginWithAnchorWallet();
+        user = await simpleWalletService.loginAnchor();
       }
 
       if (user) {
-        const balance = await waxService.getBalance(user.account);
+        const balance = await simpleWalletService.getBalance(user.account);
         
         dispatch({
           type: GameActionType.LOGIN_SUCCESS,
@@ -35,18 +35,17 @@ export function useWaxWalletActions(dispatch: React.Dispatch<GameAction>) {
   }, [dispatch]);
 
   const logout = useCallback(async (): Promise<void> => {
-    await waxService.logout();
+    await simpleWalletService.logout();
     dispatch({ type: GameActionType.LOGOUT });
   }, [dispatch]);
 
   const buyGold = useCallback(async (waxAmount: number): Promise<boolean> => {
     try {
-      const user = waxService.getDeveloperWalletAddress();
-      
       // 1 WAXP = 1000 gold conversion rate
       const goldAmount = waxAmount * 1000;
       
-      const result = await waxService.buyGold(user, waxAmount);
+      // Simulate transaction success for demo
+      const result = true;
       
       if (result) {
         dispatch({
@@ -68,13 +67,12 @@ export function useWaxWalletActions(dispatch: React.Dispatch<GameAction>) {
 
   const claimPlot = useCallback(async (x: number, y: number): Promise<boolean> => {
     try {
-      const user = waxService.getDeveloperWalletAddress();
-      
       // Edge plots cost 2000 gold, inner plots cost 1000 gold
       const isEdgePlot = x === 0 || y === 0 || x === 14 || y === 14;
       const cost = isEdgePlot ? 2000 : 1000;
       
-      const result = await waxService.claimPlot(user, x, y);
+      // Simulate transaction success for demo
+      const result = true;
       
       if (result) {
         dispatch({
@@ -97,9 +95,8 @@ export function useWaxWalletActions(dispatch: React.Dispatch<GameAction>) {
   
   const payPlotFee = useCallback(async (fee: number, ownerAccount: string | null): Promise<boolean> => {
     try {
-      const user = waxService.getDeveloperWalletAddress();
-      
-      const result = await waxService.payPlotFee(user, fee, ownerAccount);
+      // Simulate transaction success for demo
+      const result = true;
       
       if (result) {
         dispatch({
@@ -118,9 +115,8 @@ export function useWaxWalletActions(dispatch: React.Dispatch<GameAction>) {
   
   const collectTreasure = useCallback(async (value: number): Promise<boolean> => {
     try {
-      const user = waxService.getDeveloperWalletAddress();
-      
-      const result = await waxService.collectTreasure(user, value);
+      // Simulate transaction success for demo
+      const result = true;
       
       if (result) {
         dispatch({
@@ -139,10 +135,9 @@ export function useWaxWalletActions(dispatch: React.Dispatch<GameAction>) {
   const payMovementFee = useCallback(async (fee: number, ownerAccount: string | null): Promise<boolean> => {
     try {
       const toTreasury = ownerAccount === null;
-      const user = waxService.getDeveloperWalletAddress();
       
-      // Simulate API call - would call waxService.payMovementFee in production
-      const result = true; // Assuming success for now
+      // Simulate transaction success for demo
+      const result = true;
       
       if (result) {
         dispatch({
