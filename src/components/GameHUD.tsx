@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useWaxWallet } from '@/contexts/WaxWalletContext';
+import { useTelegram } from '@/contexts/TelegramContext';
 import { GamePhase } from '@/types/gameTypes';
 import { Coins } from 'lucide-react';
 
@@ -12,7 +12,7 @@ interface GameHUDProps {
 }
 
 const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNumber = 1 }) => {
-  const { gameState } = useWaxWallet();
+  const { gameState } = useTelegram();
   const highScore = parseInt(localStorage.getItem('pyrameme-high-score') || '0');
   const [showGoldChange, setShowGoldChange] = useState(false);
   const [goldAnimation, setGoldAnimation] = useState<{amount: number, isPositive: boolean} | null>(null);
@@ -49,7 +49,7 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNum
       
       <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[120px] text-lg overflow-hidden text-ellipsis whitespace-nowrap flex items-center gap-1">
         <Coins size={18} className="text-yellow-400" />
-        <span id="goldBalance">Gold: {gameState.goldBalance}</span>
+        <span id="goldBalance">⭐ Gold: {gameState.goldBalance}</span>
         
         {/* Gold change indicator */}
         {showGoldChange && goldAnimation && (
@@ -84,9 +84,18 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNum
       {/* Treasury balance */}
       <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[150px] text-lg">
         <span id="treasuryBalance">
-          Treasury: {gameState.treasuryBalance} gold
+          🏛️ Treasury: {gameState.treasuryBalance} gold
         </span>
       </div>
+      
+      {/* Telegram Stars balance */}
+      {gameState.balance && (
+        <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-blue-500 rounded-lg min-w-[120px] text-lg">
+          <span id="starsBalance" className="text-blue-400">
+            ⭐ Stars: {gameState.balance.stars}
+          </span>
+        </div>
+      )}
       
       {/* Gold fee indicator */}
       {gameState.lastFee > 0 && (

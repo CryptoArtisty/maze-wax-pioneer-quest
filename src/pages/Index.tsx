@@ -1,13 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LoginModal from '@/components/LoginModal';
-import { useWaxWallet } from '@/contexts/WaxWalletContext';
+import { TelegramLoginModal } from '@/components/TelegramLoginModal';
+import { useTelegram } from '@/contexts/TelegramContext';
 
 const Index = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [showWalletOptions, setShowWalletOptions] = useState(false);
-  const { gameState, loginDemo } = useWaxWallet();
+  const { gameState } = useTelegram();
   const navigate = useNavigate();
 
   // Redirect to game if already authenticated
@@ -17,77 +17,43 @@ const Index = () => {
     }
   }, [gameState.isAuthenticated, navigate]);
 
-  const handleDemoLogin = () => {
-    loginDemo();
-    navigate('/game');
+  const handleTelegramLogin = () => {
+    setIsLoginModalOpen(true);
   };
 
-  const handleShowWalletOptions = () => {
-    setShowWalletOptions(true);
-  };
-
-  const handleSkipDemo = () => {
+  const handleDemoMode = () => {
+    // For Telegram mini app, we'll redirect to login instead of demo
     setIsLoginModalOpen(true);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-bg-dark to-bg-gradient1 text-gold">
       <div className="text-center p-8 max-w-md w-full">
-        <h1 className="text-4xl font-bold mb-6">𓋹 Pyrameme Quest 𓋹</h1>
-        <p className="text-xl mb-8">A blockchain maze game where players claim Plots and navigate through puzzles to collect crypto treasures</p>
+        <h1 className="text-4xl font-bold mb-6">⭐ Pyramid Quest ⭐</h1>
+        <p className="text-xl mb-8">A Telegram mini app maze game where players use Stars to claim plots and collect treasures</p>
         
-        {!showWalletOptions ? (
-          <div className="space-y-4">
-            <button 
-              onClick={handleDemoLogin}
-              className="bg-hieroglyphic-brown border-2 border-gold text-gold hover:bg-hieroglyphic-brown/80 py-3 px-6 rounded-lg text-lg w-full"
-            >
-              Try Demo (No Wallet Required)
-            </button>
-            
-            <div className="space-y-2">
-              <button 
-                onClick={handleShowWalletOptions}
-                className="bg-gray-700 border-2 border-gray-500 text-gray-300 hover:bg-gray-600 py-2 px-4 rounded-lg text-sm w-full"
-              >
-                Connect Wallet Instead
-              </button>
-            </div>
+        <div className="space-y-4">
+          <button 
+            onClick={handleTelegramLogin}
+            className="bg-blue-500 border-2 border-blue-400 text-white hover:bg-blue-600 py-3 px-6 rounded-lg text-lg w-full flex items-center justify-center gap-2"
+          >
+            ⭐ Connect with Telegram
+          </button>
+          
+          <div className="text-sm text-gold/70 space-y-1">
+            <p>• Use Telegram Stars to purchase gold</p>
+            <p>• Claim plots and navigate mazes</p>
+            <p>• Collect treasures and compete with friends</p>
           </div>
-        ) : (
-          <div className="space-y-4">
-            <button 
-              onClick={() => setIsLoginModalOpen(true)}
-              className="bg-hieroglyphic-brown border-2 border-gold text-gold hover:bg-hieroglyphic-brown/80 py-3 px-6 rounded-lg text-lg w-full"
-            >
-              Connect Wallet
-            </button>
-            
-            <div className="space-y-2">
-              <button 
-                onClick={handleDemoLogin}
-                className="bg-gray-700 border-2 border-gray-500 text-gray-300 hover:bg-gray-600 py-2 px-4 rounded-lg text-sm w-full"
-              >
-                Try Demo Instead
-              </button>
-              
-              <button 
-                onClick={() => setShowWalletOptions(false)}
-                className="text-gold/60 hover:text-gold text-sm underline"
-              >
-                ← Back to Demo
-              </button>
-            </div>
-          </div>
-        )}
+        </div>
         
         <div className="mt-8 text-sm text-gold/70">
-          <p>Experience the thrill of blockchain gaming</p>
-          <p>Claim plots, solve puzzles, collect treasures!</p>
+          <p>🎮 Built for Telegram mini apps</p>
+          <p>⭐ Powered by Telegram Stars</p>
         </div>
       </div>
       
-      <LoginModal 
+      <TelegramLoginModal 
         isOpen={isLoginModalOpen} 
         onClose={() => setIsLoginModalOpen(false)} 
       />

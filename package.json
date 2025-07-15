@@ -40,6 +40,7 @@
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.4",
     "@tanstack/react-query": "^5.56.2",
+    "@twa-dev/sdk": "^8.0.2",
     "@waxio/waxjs": "^1.4.0",
     "anchor-link": "^3.6.0",
     "anchor-link-browser-transport": "^3.5.1",
