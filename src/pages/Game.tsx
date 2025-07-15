@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import GameHeader from '@/components/GameHeader';
 import BottomBar from '@/components/BottomBar';
 import GameDrawer from '@/components/GameDrawer';
-import { useTelegram } from '@/contexts/TelegramContext';
+import { useLightning } from '@/contexts/LightningContext';
 import { ToastContainer } from '@/components/ui/custom-toast';
 import VictoryModal from '@/components/VictoryModal';
 import GameHUD from '@/components/GameHUD';
@@ -25,11 +25,11 @@ const Game: React.FC = () => {
   // Add defensive check for context
   let gameState, resetPlotClaim;
   try {
-    const telegramContext = useTelegram();
-    gameState = telegramContext.gameState;
-    resetPlotClaim = telegramContext.resetPlotClaim;
+    const lightningContext = useLightning();
+    gameState = lightningContext.gameState;
+    resetPlotClaim = lightningContext.resetPlotClaim;
   } catch (error) {
-    console.error("Telegram context error:", error);
+    console.error("Lightning context error:", error);
     // Fallback to prevent crash
     gameState = { isAuthenticated: false };
     resetPlotClaim = () => {};
