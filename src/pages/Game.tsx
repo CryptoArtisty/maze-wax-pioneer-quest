@@ -38,9 +38,10 @@ const Game: React.FC = () => {
     resetPlotClaim = waxContext.resetPlotClaim;
     gameMode = 'demo';
   } else {
-    // Fallback to prevent crash
-    gameState = { isAuthenticated: false };
-    resetPlotClaim = () => {};
+    // Try to initialize demo mode if no authentication
+    gameState = waxContext.gameState;
+    resetPlotClaim = waxContext.resetPlotClaim;
+    gameMode = 'demo';
   }
   
   const navigate = useNavigate();

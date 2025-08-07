@@ -32,6 +32,11 @@ const Index = () => {
     setIsDemoLoginModalOpen(true);
   };
 
+  const handleQuickDemo = () => {
+    const { loginDemo } = useWaxWallet();
+    loginDemo();
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-bg-dark to-bg-gradient1 text-gold">
       <div className="text-center p-8 max-w-lg w-full">
@@ -62,16 +67,29 @@ const Index = () => {
           </div>
           
           <button 
+            onClick={handleQuickDemo}
+            className="bg-green-600 border-2 border-green-500 text-white hover:bg-green-700 py-3 px-6 rounded-lg text-lg w-full flex items-center justify-center gap-2"
+          >
+            🚀 Quick Demo (No Wallet)
+          </button>
+          
+          <div className="text-sm text-gold/70 space-y-1 mb-4">
+            <p>• Instant play - no setup required</p>
+            <p>• Practice with virtual currency</p>
+            <p>• Learn the game mechanics</p>
+          </div>
+
+          <button 
             onClick={handleDemoMode}
             className="bg-purple-600 border-2 border-purple-500 text-white hover:bg-purple-700 py-3 px-6 rounded-lg text-lg w-full flex items-center justify-center gap-2"
           >
-            🎮 Play Demo Mode
+            🎮 Demo with Wallet
           </button>
           
           <div className="text-sm text-gold/70 space-y-1">
-            <p>• Practice with virtual currency</p>
-            <p>• Learn the game mechanics</p>
-            <p>• Connect wallets for real rewards later</p>
+            <p>• Connect wallet for demo mode</p>
+            <p>• Test wallet integration</p>
+            <p>• Prepare for real gameplay</p>
           </div>
         </div>
       </div>
