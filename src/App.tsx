@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LightningProvider } from "./contexts/LightningContext";
+import { WaxWalletProvider } from "./contexts/WaxWalletContext";
 import { NetworkStatus } from "./components/ui/network-status";
 import { NetworkHealth } from "./components/ui/network-health";
 import { useSessionPersistence } from "./hooks/useSessionPersistence";
@@ -56,9 +57,11 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <BrowserRouter>
-        <LightningProvider>
-          <AppContent />
-        </LightningProvider>
+        <WaxWalletProvider>
+          <LightningProvider>
+            <AppContent />
+          </LightningProvider>
+        </WaxWalletProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

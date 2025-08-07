@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { useWaxWallet } from '@/contexts/WaxWalletContext';
+import { useLightning } from '@/contexts/LightningContext';
 import { GamePhase } from '@/types/gameTypes';
 import GameCanvas from '@/components/game/GameCanvas';
 import { useGridInitializer } from '@/hooks/useGridInitializer';
@@ -19,7 +20,16 @@ interface MazeGridProps {
 }
 
 const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChange }) => {
-  const { gameState, claimPlot, payPlotFee, payMovementFee, collectTreasure } = useWaxWallet();
+  const lightningContext = useLightning();
+  const waxContext = useWaxWallet();
+  
+  // Determine which context is active
+  const isLightningMode = lightningContext.gameState.isAuthenticated;
+  const gameState = isLightningMode ? lightningContext.gameState : waxContext.gameState;
+  const claimPlot = isLightningMode ? lightningContext.claimPlot : waxContext.claimPlot;
+  const payPlotFee = isLightningMode ? lightningContext.payPlotFee : waxContext.payPlotFee;
+  const payMovementFee = isLightningMode ? lightningContext.payMovementFee : waxContext.payMovementFee;
+  const collectTreasure = isLightningMode ? lightningContext.collectTreasure : waxContext.collectTreasure;
 
   // Initialize grid state using our custom hook
   const {
@@ -33,7 +43,7 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
     setPlayer,
     setTreasures,
     setHintPaths
-  } = useGridInitializer({ rows, cols, gamePhase, gameState });
+  } = useGridInitializer({ rows, cols, gamePhase, gameState: gameState as any });
 
   // Reference to store the movePlayer function from PlayerController
   const movePlayerRef = React.useRef<(col: number, row: number) => void>();
@@ -47,7 +57,7 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
   const { handleCellClick } = useCellHandler({
     gridCells,
     setGridCells,
-    gameState,
+    gameState: gameState as any,
     gamePhase,
     claimPlot,
     movePlayer: (col, row) => {
@@ -151,7 +161,7 @@ const MazeGrid: React.FC<MazeGridProps> = ({ rows, cols, gamePhase, onScoreChang
           treasures={treasures}
           setTreasures={setTreasures}
           exitCell={exitCell}
-          gameState={gameState}
+          gameState={gameState as any}
           gamePhase={gamePhase}
           rows={rows}
           cols={cols}

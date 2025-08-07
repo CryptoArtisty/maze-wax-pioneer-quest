@@ -5,6 +5,7 @@ import GameHeader from '@/components/GameHeader';
 import BottomBar from '@/components/BottomBar';
 import GameDrawer from '@/components/GameDrawer';
 import { useLightning } from '@/contexts/LightningContext';
+import { useWaxWallet } from '@/contexts/WaxWalletContext';
 import { ToastContainer } from '@/components/ui/custom-toast';
 import VictoryModal from '@/components/VictoryModal';
 import GameHUD from '@/components/GameHUD';
@@ -22,14 +23,21 @@ const Game: React.FC = () => {
   const [roundNumber, setRoundNumber] = useState(1);
   const [showBuyGoldModal, setShowBuyGoldModal] = useState(false);
   
-  // Add defensive check for context
-  let gameState, resetPlotClaim;
-  try {
-    const lightningContext = useLightning();
+  // Check which context is active and use appropriate game state
+  let gameState, resetPlotClaim, gameMode = 'demo';
+  
+  const lightningContext = useLightning();
+  const waxContext = useWaxWallet();
+  
+  if (lightningContext.gameState.isAuthenticated) {
     gameState = lightningContext.gameState;
     resetPlotClaim = lightningContext.resetPlotClaim;
-  } catch (error) {
-    console.error("Lightning context error:", error);
+    gameMode = 'lightning';
+  } else if (waxContext.gameState.isAuthenticated) {
+    gameState = waxContext.gameState;
+    resetPlotClaim = waxContext.resetPlotClaim;
+    gameMode = 'demo';
+  } else {
     // Fallback to prevent crash
     gameState = { isAuthenticated: false };
     resetPlotClaim = () => {};

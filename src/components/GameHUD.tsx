@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useLightning } from '@/contexts/LightningContext';
+import { useWaxWallet } from '@/contexts/WaxWalletContext';
 import { GamePhase } from '@/types/gameTypes';
 import { Coins } from 'lucide-react';
 
@@ -12,7 +13,12 @@ interface GameHUDProps {
 }
 
 const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNumber = 1 }) => {
-  const { gameState } = useLightning();
+  const lightningContext = useLightning();
+  const waxContext = useWaxWallet();
+  
+  // Determine which context is active
+  const isLightningMode = lightningContext.gameState.isAuthenticated;
+  const gameState = isLightningMode ? lightningContext.gameState : waxContext.gameState;
   const highScore = parseInt(localStorage.getItem('pyrameme-high-score') || '0');
   const [showGoldChange, setShowGoldChange] = useState(false);
   const [goldAnimation, setGoldAnimation] = useState<{amount: number, isPositive: boolean} | null>(null);
@@ -84,15 +90,19 @@ const GameHUD: React.FC<GameHUDProps> = ({ score, phaseTime, gamePhase, roundNum
       {/* Treasury balance */}
       <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-gold rounded-lg min-w-[150px] text-lg">
         <span id="treasuryBalance">
-          🏛️ Treasury: {gameState.treasuryBalance} sats
+          🏛️ Treasury: {gameState.treasuryBalance} {isLightningMode ? 'sats' : 'gold'}
         </span>
       </div>
       
-      {/* Bitcoin Lightning balance */}
+      {/* Wallet balance */}
       {gameState.balance && (
         <div className="card bg-[rgba(0,0,0,0.7)] p-3 border-2 border-orange-500 rounded-lg min-w-[120px] text-lg">
-          <span id="lightningBalance" className="text-orange-400">
-            ⚡ {gameState.balance.satoshis} sats
+          <span id="walletBalance" className="text-orange-400">
+            {isLightningMode ? (
+              <>⚡ {(gameState.balance as any).satoshis} sats</>
+            ) : (
+              <>{(gameState.balance as any).waxp} WAXP</>
+            )}
           </span>
         </div>
       )}
