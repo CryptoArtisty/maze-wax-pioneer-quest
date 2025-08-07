@@ -12,7 +12,7 @@ const Index = () => {
   const [gameMode, setGameMode] = useState<'lightning' | 'demo' | null>(null);
   
   const { gameState: lightningGameState } = useLightning();
-  const { gameState: demoGameState } = useWaxWallet();
+  const { gameState: demoGameState, loginDemo } = useWaxWallet();
   const navigate = useNavigate();
 
   // Redirect to game if already authenticated in either mode
@@ -33,7 +33,6 @@ const Index = () => {
   };
 
   const handleQuickDemo = () => {
-    const { loginDemo } = useWaxWallet();
     loginDemo();
   };
 
